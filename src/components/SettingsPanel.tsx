@@ -1,4 +1,5 @@
 import type { ProviderType } from '../types/llm'
+import type { ProbeResult } from '../services/device-probe'
 
 interface WebLLMModelOption {
   id: string
@@ -18,6 +19,9 @@ interface SettingsPanelProps {
   webllmModel: string
   onWebllmModelChange: (id: string) => void
   webllmModels: WebLLMModelOption[]
+  onProbeHardware: () => void
+  probing: boolean
+  probeResult: ProbeResult | null
 }
 
 export function SettingsPanel({
@@ -32,6 +36,9 @@ export function SettingsPanel({
   webllmModel,
   onWebllmModelChange,
   webllmModels,
+  onProbeHardware,
+  probing,
+  probeResult,
 }: SettingsPanelProps) {
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
@@ -82,7 +89,7 @@ export function SettingsPanel({
 
       {provider === 'webllm' && (
         <>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <label htmlFor="webllm-model" className="text-sm text-zinc-600">
               Model
             </label>
@@ -90,16 +97,31 @@ export function SettingsPanel({
               id="webllm-model"
               value={webllmModel}
               onChange={(e) => onWebllmModelChange(e.target.value)}
-              disabled={providerLoading}
+              disabled={providerLoading || probing}
               className="rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
+              <option value="">Select a model…</option>
               {webllmModels.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.label} ({m.size})
                 </option>
               ))}
             </select>
+            <button
+              type="button"
+              onClick={onProbeHardware}
+              disabled={probing || providerLoading}
+              className="rounded border border-indigo-300 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {probing ? 'Probing…' : 'Choose best model for my hardware'}
+            </button>
           </div>
+
+          {probeResult && <p className="text-xs text-zinc-500">Auto-picked: {probeResult.reason}</p>}
+
+          {!webllmModel && !providerLoading && !probing && (
+            <p className="text-xs text-zinc-500">Pick a model to load it, or let the probe choose one.</p>
+          )}
 
           {providerLoading && (
             <div className="flex flex-col gap-1.5">

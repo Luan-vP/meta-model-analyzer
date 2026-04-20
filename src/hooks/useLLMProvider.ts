@@ -29,7 +29,12 @@ export function useLLMProvider(provider: ProviderType, apiKey: string, webllmMod
       setService(svc)
       setReady(true)
     } else {
-      // WebLLM
+      // WebLLM — don't load anything until the user has picked a model.
+      if (!webllmModel) {
+        setService(null)
+        serviceRef.current = null
+        return
+      }
       setLoading(true)
       setProgress({ value: 0, status: 'Loading WebLLM...' })
       try {
