@@ -7,7 +7,17 @@ import { AnnotatedText } from './components/AnnotatedText'
 import { AVAILABLE_WEBLLM_MODELS } from './services/webllm-service'
 
 export default function App() {
-  const { apiKey, setApiKey, provider, setProvider, webllmModel, setWebllmModel } = useSettings()
+  const {
+    apiKey,
+    setApiKey,
+    provider,
+    setProvider,
+    webllmModel,
+    setWebllmModel,
+    probeWebllmModel,
+    probing,
+    probeResult,
+  } = useSettings()
   const { service, ready, loading, progress, error: providerError } = useLLMProvider(provider, apiKey, webllmModel)
   const { result, analyzing, error: analysisError, analyze } = useAnalysis(service)
 
@@ -33,6 +43,9 @@ export default function App() {
           webllmModel={webllmModel}
           onWebllmModelChange={setWebllmModel}
           webllmModels={AVAILABLE_WEBLLM_MODELS}
+          onProbeHardware={probeWebllmModel}
+          probing={probing}
+          probeResult={probeResult}
         />
 
         <TextInput onAnalyze={analyze} disabled={!ready} analyzing={analyzing} />

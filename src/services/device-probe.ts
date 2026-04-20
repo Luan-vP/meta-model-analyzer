@@ -18,20 +18,23 @@ const SMALL_MODEL_ID = 'Qwen3-0.6B-q4f16_1-MLC'
 const LARGE_DEFAULT_MODEL_ID = DEFAULT_WEBLLM_MODEL_ID
 
 /**
- * Conservative lower bound (in bytes) of `adapter.limits.maxBufferSize` for
- * comfortably running a 4B q4f16 model. The weights are ~2.5 GB; we pad to
- * ~3 GB to leave room for activations / KV cache. If the adapter caps below
- * this, we fall back to the small model.
+ * `adapter.limits.maxBufferSize` is NOT total VRAM — it's the per-buffer
+ * cap. WebGPU's spec default is 256 MB, and browsers typically scale the
+ * reported limit with the underlying hardware: discrete GPUs advertise
+ * multi-GB caps; integrated / phone GPUs report values in the hundreds of
+ * MB. MLC splits weights across buffers so a 4B model can still run with a
+ * modest cap, but adapters reporting under 1 GB are almost always paired
+ * with little overall VRAM. We downgrade in that range.
  */
-const MIN_MAX_BUFFER_FOR_4B = 3 * 1024 * 1024 * 1024 // 3 GB
+const MIN_MAX_BUFFER_FOR_4B = 1 * 1024 * 1024 * 1024 // 1 GB
 
 /**
- * Weaker heuristic for environments without WebGPU: if the JS heap cap is
- * below ~2 GB we assume a constrained device. The 4B weights alone exceed
- * the heap cap on most 32-bit-ish mobile browsers, so this is a reasonable
- * proxy when it is the only signal.
+ * `performance.memory.jsHeapSizeLimit` is Chromium-only. On mobile Chrome it
+ * typically caps around 512 MB; on desktop Chromium it sits at 2–4 GB. A
+ * 1 GB cutoff separates mobile-tier heaps from desktop-tier ones without
+ * false-flagging legitimate desktop devices. Weaker than the WebGPU signal.
  */
-const MIN_JS_HEAP_FOR_4B = 2 * 1024 * 1024 * 1024 // 2 GB
+const MIN_JS_HEAP_FOR_4B = 1 * 1024 * 1024 * 1024 // 1 GB
 
 /**
  * Regex for user-agent strings we treat as "probably memory-constrained"
