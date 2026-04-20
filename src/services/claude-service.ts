@@ -3,6 +3,8 @@ import type { LLMService } from '../types/llm'
 import type { Annotation } from '../types/analysis'
 import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage } from './prompt'
 
+const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-5'
+
 export class ClaudeService implements LLMService {
   readonly providerName = 'Claude'
   private client: Anthropic | null = null
@@ -30,7 +32,7 @@ export class ClaudeService implements LLMService {
 
     const response = await this.client!.messages.create(
       {
-        model: 'claude-sonnet-4-5-20250514',
+        model: DEFAULT_CLAUDE_MODEL,
         max_tokens: 4096,
         system: SYSTEM_PROMPT,
         messages: [
