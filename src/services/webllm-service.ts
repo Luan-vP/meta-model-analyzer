@@ -2,12 +2,24 @@ import type { LLMService } from '../types/llm'
 import type { Annotation } from '../types/analysis'
 import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage } from './prompt'
 
-const MODEL_ID = 'Qwen3-4B-q4f16_1-MLC'
+export const AVAILABLE_WEBLLM_MODELS = [
+  { id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Small (Qwen3 0.6B)', size: '~0.4GB' },
+  { id: 'Qwen3-1.7B-q4f16_1-MLC', label: 'Qwen3 1.7B', size: '~1.1GB' },
+  { id: 'Qwen3-4B-q4f16_1-MLC', label: 'Default (Qwen3 4B)', size: '~2.5GB' },
+  { id: 'Qwen3-8B-q4f16_1-MLC', label: 'Large (Qwen3 8B)', size: '~5GB' },
+]
+
+export const DEFAULT_WEBLLM_MODEL_ID = AVAILABLE_WEBLLM_MODELS[2].id
 
 export class WebLLMService implements LLMService {
   readonly providerName = 'WebLLM (Local)'
   private engine: import('@mlc-ai/web-llm').MLCEngineInterface | null = null
   private ready = false
+  private modelId: string
+
+  constructor(modelId?: string) {
+    this.modelId = modelId ?? DEFAULT_WEBLLM_MODEL_ID
+  }
 
   isReady(): boolean {
     return this.ready
@@ -20,7 +32,7 @@ export class WebLLMService implements LLMService {
       type: 'module',
     })
 
-    this.engine = await CreateWebWorkerMLCEngine(worker, MODEL_ID, {
+    this.engine = await CreateWebWorkerMLCEngine(worker, this.modelId, {
       initProgressCallback: (report) => {
         onProgress?.(report.progress, report.text)
       },

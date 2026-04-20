@@ -4,10 +4,11 @@ import { useAnalysis } from './hooks/useAnalysis'
 import { SettingsPanel } from './components/SettingsPanel'
 import { TextInput } from './components/TextInput'
 import { AnnotatedText } from './components/AnnotatedText'
+import { AVAILABLE_WEBLLM_MODELS } from './services/webllm-service'
 
 export default function App() {
-  const { apiKey, setApiKey, provider, setProvider } = useSettings()
-  const { service, ready, loading, progress, error: providerError } = useLLMProvider(provider, apiKey)
+  const { apiKey, setApiKey, provider, setProvider, webllmModel, setWebllmModel } = useSettings()
+  const { service, ready, loading, progress, error: providerError } = useLLMProvider(provider, apiKey, webllmModel)
   const { result, analyzing, error: analysisError, analyze } = useAnalysis(service)
 
   return (
@@ -29,6 +30,9 @@ export default function App() {
           providerLoading={loading}
           providerProgress={progress}
           providerError={providerError}
+          webllmModel={webllmModel}
+          onWebllmModelChange={setWebllmModel}
+          webllmModels={AVAILABLE_WEBLLM_MODELS}
         />
 
         <TextInput onAnalyze={analyze} disabled={!ready} analyzing={analyzing} />

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import type { ProviderType, LLMService } from '../types/llm'
 import { ClaudeService } from '../services/claude-service'
 
-export function useLLMProvider(provider: ProviderType, apiKey: string) {
+export function useLLMProvider(provider: ProviderType, apiKey: string, webllmModel: string) {
   const [service, setService] = useState<LLMService | null>(null)
   const [ready, setReady] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -34,7 +34,7 @@ export function useLLMProvider(provider: ProviderType, apiKey: string) {
       setProgress({ value: 0, status: 'Loading WebLLM...' })
       try {
         const { WebLLMService } = await import('../services/webllm-service')
-        const svc = new WebLLMService()
+        const svc = new WebLLMService(webllmModel)
         await svc.initialize((value, status) => {
           setProgress({ value, status })
         })
@@ -47,7 +47,7 @@ export function useLLMProvider(provider: ProviderType, apiKey: string) {
         setLoading(false)
       }
     }
-  }, [provider, apiKey])
+  }, [provider, apiKey, webllmModel])
 
   useEffect(() => {
     initializeProvider()
