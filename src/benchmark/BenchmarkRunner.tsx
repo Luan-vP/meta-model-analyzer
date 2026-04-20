@@ -1,15 +1,8 @@
 import { useState, useCallback } from 'react'
 import { BENCHMARK_DATASET, type BenchmarkEntry, type ExpectedViolation } from '../data/benchmark-dataset'
 import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage } from '../services/prompt'
+import { AVAILABLE_WEBLLM_MODELS } from '../services/webllm-service'
 import type { Annotation } from '../types/analysis'
-
-// Available Qwen3 models in WebLLM registry
-const AVAILABLE_MODELS = [
-  { id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Qwen3 0.6B (q4f16)', size: '~0.4GB' },
-  { id: 'Qwen3-1.7B-q4f16_1-MLC', label: 'Qwen3 1.7B (q4f16)', size: '~1.1GB' },
-  { id: 'Qwen3-4B-q4f16_1-MLC', label: 'Qwen3 4B (q4f16)', size: '~2.5GB' },
-  { id: 'Qwen3-8B-q4f16_1-MLC', label: 'Qwen3 8B (q4f16)', size: '~5GB' },
-]
 
 interface EntryResult {
   id: string
@@ -74,7 +67,7 @@ function scoreEntry(entry: BenchmarkEntry, detected: Annotation[]) {
 }
 
 export function BenchmarkRunner() {
-  const [selectedModel, setSelectedModel] = useState(AVAILABLE_MODELS[2].id)
+  const [selectedModel, setSelectedModel] = useState(AVAILABLE_WEBLLM_MODELS[2].id)
   const [running, setRunning] = useState(false)
   const [progress, setProgress] = useState({ current: 0, total: 0, status: '' })
   const [summary, setSummary] = useState<BenchmarkSummary | null>(null)
@@ -224,7 +217,7 @@ export function BenchmarkRunner() {
             disabled={running}
             className="rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm"
           >
-            {AVAILABLE_MODELS.map((m) => (
+            {AVAILABLE_WEBLLM_MODELS.map((m) => (
               <option key={m.id} value={m.id}>
                 {m.label} ({m.size})
               </option>

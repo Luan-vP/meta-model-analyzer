@@ -1,5 +1,11 @@
 import type { ProviderType } from '../types/llm'
 
+interface WebLLMModelOption {
+  id: string
+  label: string
+  size: string
+}
+
 interface SettingsPanelProps {
   apiKey: string
   onApiKeyChange: (key: string) => void
@@ -9,6 +15,9 @@ interface SettingsPanelProps {
   providerLoading: boolean
   providerProgress: { value: number; status: string }
   providerError: string | null
+  webllmModel: string
+  onWebllmModelChange: (id: string) => void
+  webllmModels: WebLLMModelOption[]
 }
 
 export function SettingsPanel({
@@ -20,6 +29,9 @@ export function SettingsPanel({
   providerLoading,
   providerProgress,
   providerError,
+  webllmModel,
+  onWebllmModelChange,
+  webllmModels,
 }: SettingsPanelProps) {
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
@@ -68,16 +80,39 @@ export function SettingsPanel({
         </div>
       )}
 
-      {provider === 'webllm' && providerLoading && (
-        <div className="flex flex-col gap-1.5">
-          <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200">
-            <div
-              className="h-full rounded-full bg-teal-500 transition-all duration-300"
-              style={{ width: `${Math.round(providerProgress.value * 100)}%` }}
-            />
+      {provider === 'webllm' && (
+        <>
+          <div className="flex items-center gap-2">
+            <label htmlFor="webllm-model" className="text-sm text-zinc-600">
+              Model
+            </label>
+            <select
+              id="webllm-model"
+              value={webllmModel}
+              onChange={(e) => onWebllmModelChange(e.target.value)}
+              disabled={providerLoading}
+              className="rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {webllmModels.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label} ({m.size})
+                </option>
+              ))}
+            </select>
           </div>
-          <p className="text-xs text-zinc-500">{providerProgress.status}</p>
-        </div>
+
+          {providerLoading && (
+            <div className="flex flex-col gap-1.5">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200">
+                <div
+                  className="h-full rounded-full bg-teal-500 transition-all duration-300"
+                  style={{ width: `${Math.round(providerProgress.value * 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-zinc-500">{providerProgress.status}</p>
+            </div>
+          )}
+        </>
       )}
 
       {providerError && <p className="text-sm text-red-600">{providerError}</p>}
