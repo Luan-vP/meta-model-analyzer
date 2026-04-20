@@ -1,3 +1,19 @@
+# Meta-Model Analyzer
+
+## Claude Code Skill
+
+This repository ships a **Claude Code skill** that packages the full NLP Meta-Model distortions catalogue — all 13 violation types with descriptions, signal words, canonical examples, and challenge questions. Any Claude Code session (in this repo or a downstream project) can load it to identify, explain, and challenge linguistic distortions, deletions, and generalizations.
+
+**Install the skill** (run once from the repo root):
+
+```bash
+bash install-skill.sh
+```
+
+This creates `.claude/skills/distortions/SKILL.md`. Once present, Claude Code will auto-trigger the skill when you ask about NLP meta-model violations, Bandler and Grinder, "The Structure of Magic", or challenge questions for linguistic patterns.
+
+---
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
