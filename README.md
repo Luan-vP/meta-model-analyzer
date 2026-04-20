@@ -2,6 +2,10 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Claude Code skill: NLP Meta-Model distortions
+
+This repo ships a Claude Code skill at [`.claude/skills/distortions/SKILL.md`](.claude/skills/distortions/SKILL.md) that packages the 13-type Meta-Model distortions catalogue (descriptions, signal words, canonical examples, challenge questions, and the annotation JSON schema). Any `claude` session started inside this repo can load it on demand when asked about meta-model violations, linguistic distortions, or Bandler & Grinder's Meta-Model — making the repo's knowledge usable outside the web app.
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
