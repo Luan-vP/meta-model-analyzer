@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useSettings } from './hooks/useSettings'
 import { useLLMProvider } from './hooks/useLLMProvider'
@@ -22,10 +23,15 @@ export default function App() {
     probing,
     probeResult,
   } = useSettings()
-  const { service, ready, loading, progress, error: providerError } = useLLMProvider(provider, apiKey, webllmModel)
+  const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, apiKey, webllmModel)
   const { iterations, analyze, setText } = useIterations(service)
 
   const visible = iterations.slice(-VISIBLE_COUNT)
+
+  const handleCancelLoading = useCallback(() => {
+    cancelLoading()
+    setWebllmModel('')
+  }, [cancelLoading, setWebllmModel])
 
   return (
     <div className="relative mx-auto min-h-screen max-w-3xl px-4 py-8">
@@ -54,6 +60,7 @@ export default function App() {
           onProbeHardware={probeWebllmModel}
           probing={probing}
           probeResult={probeResult}
+          onCancelLoading={handleCancelLoading}
         />
 
         <motion.div layout className="flex flex-col gap-4">
