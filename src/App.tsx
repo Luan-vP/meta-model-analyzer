@@ -18,7 +18,12 @@ export default function App() {
     probing,
     probeResult,
   } = useSettings()
-  const { service, ready, loading, progress, error: providerError } = useLLMProvider(provider, apiKey, webllmModel)
+  const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, apiKey, webllmModel)
+
+  const handleCancelLoading = () => {
+    cancelLoading()
+    setWebllmModel('')
+  }
   const { result, analyzing, error: analysisError, analyze } = useAnalysis(service)
 
   return (
@@ -46,6 +51,7 @@ export default function App() {
           onProbeHardware={probeWebllmModel}
           probing={probing}
           probeResult={probeResult}
+          onCancelLoading={handleCancelLoading}
         />
 
         <TextInput onAnalyze={analyze} disabled={!ready} analyzing={analyzing} />

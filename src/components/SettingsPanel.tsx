@@ -22,6 +22,7 @@ interface SettingsPanelProps {
   onProbeHardware: () => void
   probing: boolean
   probeResult: ProbeResult | null
+  onCancelLoading: () => void
 }
 
 export function SettingsPanel({
@@ -39,6 +40,7 @@ export function SettingsPanel({
   onProbeHardware,
   probing,
   probeResult,
+  onCancelLoading,
 }: SettingsPanelProps) {
   return (
     <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
@@ -125,11 +127,20 @@ export function SettingsPanel({
 
           {providerLoading && (
             <div className="flex flex-col gap-1.5">
-              <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-200">
-                <div
-                  className="h-full rounded-full bg-teal-500 transition-all duration-300"
-                  style={{ width: `${Math.round(providerProgress.value * 100)}%` }}
-                />
+              <div className="flex items-center gap-2">
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-zinc-200">
+                  <div
+                    className="h-full rounded-full bg-teal-500 transition-all duration-300"
+                    style={{ width: `${Math.round(providerProgress.value * 100)}%` }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={onCancelLoading}
+                  className="rounded border border-red-300 bg-white px-2 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-1 focus:ring-red-400"
+                >
+                  Cancel
+                </button>
               </div>
               <p className="text-xs text-zinc-500">{providerProgress.status}</p>
             </div>
