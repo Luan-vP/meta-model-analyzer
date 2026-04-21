@@ -1,3 +1,4 @@
+import { useCallback } from 'react'
 import { useSettings } from './hooks/useSettings'
 import { useLLMProvider } from './hooks/useLLMProvider'
 import { useAnalysis } from './hooks/useAnalysis'
@@ -18,8 +19,13 @@ export default function App() {
     probing,
     probeResult,
   } = useSettings()
-  const { service, ready, loading, progress, error: providerError } = useLLMProvider(provider, apiKey, webllmModel)
+  const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, apiKey, webllmModel)
   const { result, analyzing, error: analysisError, analyze } = useAnalysis(service)
+
+  const handleCancelLoading = useCallback(() => {
+    cancelLoading()
+    setWebllmModel('')
+  }, [cancelLoading, setWebllmModel])
 
   return (
     <div className="mx-auto min-h-screen max-w-3xl px-4 py-8">
@@ -46,6 +52,7 @@ export default function App() {
           onProbeHardware={probeWebllmModel}
           probing={probing}
           probeResult={probeResult}
+          onCancelLoading={handleCancelLoading}
         />
 
         <TextInput onAnalyze={analyze} disabled={!ready} analyzing={analyzing} />

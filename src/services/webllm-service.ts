@@ -14,6 +14,7 @@ export const DEFAULT_WEBLLM_MODEL_ID = AVAILABLE_WEBLLM_MODELS[2].id
 export class WebLLMService implements LLMService {
   readonly providerName = 'WebLLM (Local)'
   private engine: import('@mlc-ai/web-llm').MLCEngineInterface | null = null
+  private worker: Worker | null = null
   private ready = false
   private modelId: string
 
@@ -31,6 +32,7 @@ export class WebLLMService implements LLMService {
     const worker = new Worker(new URL('./webllm-worker.ts', import.meta.url), {
       type: 'module',
     })
+    this.worker = worker
 
     this.engine = await CreateWebWorkerMLCEngine(worker, this.modelId, {
       initProgressCallback: (report) => {
@@ -78,6 +80,8 @@ export class WebLLMService implements LLMService {
   }
 
   dispose(): void {
+    this.worker?.terminate()
+    this.worker = null
     this.engine = null
     this.ready = false
   }
