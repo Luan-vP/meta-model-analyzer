@@ -91,6 +91,7 @@ export const ANNOTATION_JSON_SCHEMA = {
   properties: {
     annotations: {
       type: 'array' as const,
+      maxItems: 50,
       items: {
         type: 'object' as const,
         properties: {
@@ -201,4 +202,33 @@ export function resolveOffsets(originalText: string, rawAnnotations: RawAnnotati
 
 export function buildUserMessage(text: string): string {
   return `Analyze the following text for Meta-Model violations:\n\n---\n${text}\n---`
+}
+
+export function parseAnnotationsJSON(raw: string): unknown {
+  let text = raw.trim()
+
+  // Strip <think>...</think> reasoning blocks (Qwen3 et al.)
+  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim()
+
+  const attempts: string[] = [text]
+
+  // Markdown code fence
+  const fenceMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (fenceMatch) attempts.push(fenceMatch[1].trim())
+
+  // First { to last } — strips leading/trailing prose
+  const first = text.indexOf('{')
+  const last = text.lastIndexOf('}')
+  if (first !== -1 && last > first) attempts.push(text.slice(first, last + 1))
+
+  for (const candidate of attempts) {
+    try {
+      return JSON.parse(candidate)
+    } catch {
+      // try next
+    }
+  }
+
+  console.error('LLM response could not be parsed as JSON. Raw response:', raw)
+  throw new Error('LLM returned malformed JSON. See console for the raw response.')
 }

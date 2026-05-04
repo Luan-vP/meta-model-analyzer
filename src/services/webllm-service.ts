@@ -1,6 +1,6 @@
 import type { LLMService } from '../types/llm'
 import type { Annotation } from '../types/analysis'
-import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage } from './prompt'
+import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage, parseAnnotationsJSON } from './prompt'
 
 export const AVAILABLE_WEBLLM_MODELS = [
   { id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Small (Qwen3 0.6B)', size: '~0.4GB' },
@@ -49,9 +49,11 @@ export class WebLLMService implements LLMService {
     const response = await this.engine.chat.completions.create({
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
-        { role: 'user', content: buildUserMessage(text) },
+        // /no_think disables Qwen3's reasoning block so it streams JSON directly.
+        { role: 'user', content: buildUserMessage(text) + ' /no_think' },
       ],
       temperature: 0.1,
+      max_tokens: 2048,
       response_format: {
         type: 'json_object',
         schema: JSON.stringify(ANNOTATION_JSON_SCHEMA),
@@ -63,7 +65,7 @@ export class WebLLMService implements LLMService {
       throw new Error('No response from WebLLM')
     }
 
-    const parsed = JSON.parse(content)
+    const parsed = parseAnnotationsJSON(content) as { annotations?: unknown }
     const rawAnnotations = parsed.annotations ?? parsed
 
     const validated = (Array.isArray(rawAnnotations) ? rawAnnotations : []).filter(

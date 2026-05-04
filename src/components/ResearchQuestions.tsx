@@ -5,6 +5,7 @@ const QUESTIONS = [
   'Does iterating through rounds of LLM prompts guided by the Bandler & Grinder Meta-Model provide therapeutic benefit?',
   'Does the Bandler & Grinder Meta-Model framework allow smaller LLMs to provide comparable therapeutic benefit to frontier models?',
   'Does a UX that gives no advice but only asks questions train the user over time to spot some of these prompting questions themselves?',
+  'Does providing LLM guidance as questions avoid some sycophancy risk of direct LLM therapy?',
 ]
 
 export function ResearchQuestions() {

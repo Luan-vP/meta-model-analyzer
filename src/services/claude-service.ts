@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { LLMService } from '../types/llm'
 import type { Annotation } from '../types/analysis'
-import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage } from './prompt'
+import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage, parseAnnotationsJSON } from './prompt'
 
 const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-5'
 
@@ -54,14 +54,7 @@ export class ClaudeService implements LLMService {
       throw new Error('Unexpected response type from Claude')
     }
 
-    // Extract JSON from the response - it may be wrapped in markdown code blocks
-    let jsonText = content.text.trim()
-    const jsonMatch = jsonText.match(/```(?:json)?\s*([\s\S]*?)```/)
-    if (jsonMatch) {
-      jsonText = jsonMatch[1].trim()
-    }
-
-    const parsed = JSON.parse(jsonText)
+    const parsed = parseAnnotationsJSON(content.text) as { annotations?: unknown }
     const rawAnnotations = parsed.annotations ?? parsed
 
     // Validate against schema
