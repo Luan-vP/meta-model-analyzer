@@ -1,0 +1,68 @@
+import { useCallback, useRef, useState } from 'react'
+import type { Annotation } from '../types/analysis'
+import type { LLMService } from '../types/llm'
+
+export type IterationStatus = 'editing' | 'analyzing' | 'analyzed'
+
+export interface Iteration {
+  n: number
+  text: string
+  annotations: Annotation[]
+  status: IterationStatus
+  error: string | null
+}
+
+const makeIteration = (n: number): Iteration => ({
+  n,
+  text: '',
+  annotations: [],
+  status: 'editing',
+  error: null,
+})
+
+export function useIterations(service: LLMService | null) {
+  const [iterations, setIterations] = useState<Iteration[]>(() => [makeIteration(1)])
+  const ref = useRef(iterations)
+  ref.current = iterations
+
+  const setText = useCallback((n: number, text: string) => {
+    setIterations((prev) => prev.map((it) => (it.n === n ? { ...it, text } : it)))
+  }, [])
+
+  const analyze = useCallback(
+    async (n: number) => {
+      if (!service) return
+      const target = ref.current.find((it) => it.n === n)
+      if (!target || target.status !== 'editing') return
+      const trimmed = target.text.trim()
+      if (!trimmed) return
+
+      setIterations((prev) =>
+        prev.map((it) =>
+          it.n === n ? { ...it, text: trimmed, status: 'analyzing', error: null } : it,
+        ),
+      )
+
+      try {
+        const annotations = await service.analyze(trimmed)
+        setIterations((prev) => {
+          const updated = prev.map((it) =>
+            it.n === n ? { ...it, annotations, status: 'analyzed' as const } : it,
+          )
+          const isLast = updated[updated.length - 1]?.n === n
+          return isLast ? [...updated, makeIteration(n + 1)] : updated
+        })
+      } catch (e) {
+        const message = e instanceof Error ? e.message : 'Analysis failed'
+        setIterations((prev) =>
+          prev.map((it) =>
+            it.n === n ? { ...it, status: 'editing' as const, error: message } : it,
+          ),
+        )
+      }
+    },
+    [service],
+  )
+
+  return { iterations, analyze, setText }
+}

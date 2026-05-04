@@ -1,10 +1,13 @@
+import { AnimatePresence, motion } from 'framer-motion'
 import { useSettings } from './hooks/useSettings'
 import { useLLMProvider } from './hooks/useLLMProvider'
-import { useAnalysis } from './hooks/useAnalysis'
+import { useIterations } from './hooks/useIterations'
 import { SettingsPanel } from './components/SettingsPanel'
-import { TextInput } from './components/TextInput'
-import { AnnotatedText } from './components/AnnotatedText'
+import { IterationCard } from './components/IterationCard'
+import { ResearchQuestions } from './components/ResearchQuestions'
 import { AVAILABLE_WEBLLM_MODELS } from './services/webllm-service'
+
+const VISIBLE_COUNT = 2
 
 export default function App() {
   const {
@@ -19,10 +22,13 @@ export default function App() {
     probeResult,
   } = useSettings()
   const { service, ready, loading, progress, error: providerError } = useLLMProvider(provider, apiKey, webllmModel)
-  const { result, analyzing, error: analysisError, analyze } = useAnalysis(service)
+  const { iterations, analyze, setText } = useIterations(service)
+
+  const visible = iterations.slice(-VISIBLE_COUNT)
 
   return (
-    <div className="mx-auto min-h-screen max-w-3xl px-4 py-8">
+    <div className="relative mx-auto min-h-screen max-w-3xl px-4 py-8">
+      <ResearchQuestions />
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-zinc-900">Meta-Model Analyzer</h1>
         <p className="mt-1 text-sm text-zinc-500">
@@ -48,13 +54,19 @@ export default function App() {
           probeResult={probeResult}
         />
 
-        <TextInput onAnalyze={analyze} disabled={!ready} analyzing={analyzing} />
-
-        {analysisError && (
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">{analysisError}</div>
-        )}
-
-        {result && <AnnotatedText result={result} />}
+        <motion.div layout className="flex flex-col gap-4">
+          <AnimatePresence initial={false} mode="popLayout">
+            {visible.map((it) => (
+              <IterationCard
+                key={it.n}
+                iteration={it}
+                onTextChange={setText}
+                onAnalyze={analyze}
+                providerReady={ready}
+              />
+            ))}
+          </AnimatePresence>
+        </motion.div>
       </div>
     </div>
   )
