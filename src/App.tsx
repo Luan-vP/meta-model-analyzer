@@ -5,6 +5,7 @@ import { useIterations } from './hooks/useIterations'
 import { SettingsPanel } from './components/SettingsPanel'
 import { IterationCard } from './components/IterationCard'
 import { ResearchQuestions } from './components/ResearchQuestions'
+import { TarotDraw } from './components/TarotDraw'
 import { AVAILABLE_WEBLLM_MODELS } from './services/webllm-service'
 
 const VISIBLE_COUNT = 2
@@ -29,6 +30,7 @@ export default function App() {
   return (
     <div className="relative mx-auto min-h-screen max-w-3xl px-4 py-8">
       <ResearchQuestions />
+      <TarotDraw />
       <header className="mb-8">
         <h1 className="text-2xl font-bold text-zinc-900">Meta-Model Analyzer</h1>
         <p className="mt-1 text-sm text-zinc-500">
