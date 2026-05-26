@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import type { Annotation } from '../types/analysis'
 import type { LLMService } from '../types/llm'
+import { classifyProxyError, type ProxyErrorKind } from '../services/proxy-error'
 
 export type IterationStatus = 'editing' | 'analyzing' | 'analyzed'
 
@@ -10,6 +11,7 @@ export interface Iteration {
   annotations: Annotation[]
   status: IterationStatus
   error: string | null
+  errorKind: ProxyErrorKind | null
 }
 
 const makeIteration = (n: number): Iteration => ({
@@ -18,6 +20,7 @@ const makeIteration = (n: number): Iteration => ({
   annotations: [],
   status: 'editing',
   error: null,
+  errorKind: null,
 })
 
 export function useIterations(service: LLMService | null) {
@@ -53,10 +56,10 @@ export function useIterations(service: LLMService | null) {
           return isLast ? [...updated, makeIteration(n + 1)] : updated
         })
       } catch (e) {
-        const message = e instanceof Error ? e.message : 'Analysis failed'
+        const { kind, message } = classifyProxyError(e)
         setIterations((prev) =>
           prev.map((it) =>
-            it.n === n ? { ...it, status: 'editing' as const, error: message } : it,
+            it.n === n ? { ...it, status: 'editing' as const, error: message, errorKind: kind } : it,
           ),
         )
       }
