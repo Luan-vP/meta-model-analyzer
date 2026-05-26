@@ -8,8 +8,6 @@ interface WebLLMModelOption {
 }
 
 interface SettingsPanelProps {
-  apiKey: string
-  onApiKeyChange: (key: string) => void
   provider: ProviderType
   onProviderChange: (provider: ProviderType) => void
   providerReady: boolean
@@ -26,8 +24,6 @@ interface SettingsPanelProps {
 }
 
 export function SettingsPanel({
-  apiKey,
-  onApiKeyChange,
   provider,
   onProviderChange,
   providerReady,
@@ -73,20 +69,9 @@ export function SettingsPanel({
       </div>
 
       {provider === 'claude' && (
-        <div className="flex items-center gap-2">
-          <label htmlFor="api-key" className="text-sm text-zinc-600">
-            API Key
-          </label>
-          <input
-            id="api-key"
-            type="password"
-            value={apiKey}
-            onChange={(e) => onApiKeyChange(e.target.value)}
-            placeholder="sk-ant-..."
-            className="flex-1 rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
-          />
-          <span className="text-xs text-zinc-400">Stored locally only</span>
-        </div>
+        <p className="text-xs text-zinc-500">
+          Requests are routed through a shared proxy — no API key required.
+        </p>
       )}
 
       {provider === 'webllm' && (

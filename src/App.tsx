@@ -13,8 +13,6 @@ const VISIBLE_COUNT = 2
 
 export default function App() {
   const {
-    apiKey,
-    setApiKey,
     provider,
     setProvider,
     webllmModel,
@@ -23,7 +21,7 @@ export default function App() {
     probing,
     probeResult,
   } = useSettings()
-  const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, apiKey, webllmModel)
+  const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, webllmModel)
   const { iterations, analyze, setText } = useIterations(service)
 
   const visible = iterations.slice(-VISIBLE_COUNT)
@@ -46,8 +44,6 @@ export default function App() {
 
       <div className="flex flex-col gap-6">
         <SettingsPanel
-          apiKey={apiKey}
-          onApiKeyChange={setApiKey}
           provider={provider}
           onProviderChange={setProvider}
           providerReady={ready}

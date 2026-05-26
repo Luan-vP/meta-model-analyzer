@@ -3,13 +3,11 @@ import type { ProviderType } from '../types/llm'
 import { pickDefaultWebLLMModel, type ProbeResult } from '../services/device-probe'
 
 const STORAGE_KEYS = {
-  apiKey: 'mma-claude-api-key',
   provider: 'mma-provider',
   webllmModel: 'mma-webllm-model',
 } as const
 
 export function useSettings() {
-  const [apiKey, setApiKeyState] = useState<string>(() => localStorage.getItem(STORAGE_KEYS.apiKey) ?? '')
   const [provider, setProviderState] = useState<ProviderType>(
     () => (localStorage.getItem(STORAGE_KEYS.provider) as ProviderType) ?? 'webllm',
   )
@@ -18,11 +16,6 @@ export function useSettings() {
   )
   const [probing, setProbing] = useState(false)
   const [probeResult, setProbeResult] = useState<ProbeResult | null>(null)
-
-  const setApiKey = useCallback((key: string) => {
-    localStorage.setItem(STORAGE_KEYS.apiKey, key)
-    setApiKeyState(key)
-  }, [])
 
   const setProvider = useCallback((p: ProviderType) => {
     localStorage.setItem(STORAGE_KEYS.provider, p)
@@ -52,8 +45,6 @@ export function useSettings() {
   }, [])
 
   return {
-    apiKey,
-    setApiKey,
     provider,
     setProvider,
     webllmModel,
