@@ -9,10 +9,22 @@ export function useLLMProvider(provider: ProviderType, apiKey: string, webllmMod
   const [progress, setProgress] = useState({ value: 0, status: '' })
   const [error, setError] = useState<string | null>(null)
   const serviceRef = useRef<LLMService | null>(null)
+  const cancelledRef = useRef(false)
+
+  const cancelLoading = useCallback(() => {
+    cancelledRef.current = true
+    serviceRef.current?.dispose()
+    serviceRef.current = null
+    setService(null)
+    setLoading(false)
+    setProgress({ value: 0, status: '' })
+    setError(null)
+  }, [])
 
   const initializeProvider = useCallback(async () => {
     // Dispose previous service
     serviceRef.current?.dispose()
+    cancelledRef.current = false
     setReady(false)
     setError(null)
 
@@ -40,16 +52,18 @@ export function useLLMProvider(provider: ProviderType, apiKey: string, webllmMod
       try {
         const { WebLLMService } = await import('../services/webllm-service')
         const svc = new WebLLMService(webllmModel)
+        serviceRef.current = svc
         await svc.initialize((value, status) => {
           setProgress({ value, status })
         })
-        serviceRef.current = svc
+        if (cancelledRef.current) return
         setService(svc)
         setReady(true)
       } catch (e) {
+        if (cancelledRef.current) return
         setError(e instanceof Error ? e.message : 'Failed to initialize WebLLM')
       } finally {
-        setLoading(false)
+        if (!cancelledRef.current) setLoading(false)
       }
     }
   }, [provider, apiKey, webllmModel])
@@ -61,5 +75,5 @@ export function useLLMProvider(provider: ProviderType, apiKey: string, webllmMod
     }
   }, [initializeProvider])
 
-  return { service, ready, loading, progress, error }
+  return { service, ready, loading, progress, error, cancelLoading }
 }
