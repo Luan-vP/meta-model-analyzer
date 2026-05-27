@@ -33,6 +33,13 @@ export default function App() {
     setWebllmModel('')
   }, [cancelLoading, setWebllmModel])
 
+  const handleSwitchToWebLLM = useCallback(() => {
+    setProvider('webllm')
+    if (!webllmModel) {
+      probeWebllmModel()
+    }
+  }, [setProvider, webllmModel, probeWebllmModel])
+
   return (
     <div className="relative mx-auto min-h-screen max-w-3xl px-4 py-8">
       <ResearchQuestions />
@@ -72,6 +79,7 @@ export default function App() {
                 onTextChange={setText}
                 onAnalyze={analyze}
                 providerReady={ready}
+                onSwitchToWebLLM={provider === 'claude' ? handleSwitchToWebLLM : undefined}
               />
             ))}
           </AnimatePresence>

@@ -9,10 +9,11 @@ interface IterationCardProps {
   onTextChange: (n: number, text: string) => void
   onAnalyze: (n: number) => void
   providerReady: boolean
+  onSwitchToWebLLM?: () => void
 }
 
-export function IterationCard({ iteration, onTextChange, onAnalyze, providerReady }: IterationCardProps) {
-  const { n, text, annotations, status, error } = iteration
+export function IterationCard({ iteration, onTextChange, onAnalyze, providerReady, onSwitchToWebLLM }: IterationCardProps) {
+  const { n, text, annotations, status, error, errorKind } = iteration
   const isAnalyzed = status === 'analyzed'
   const isAnalyzing = status === 'analyzing'
 
@@ -58,7 +59,39 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
           />
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              {error}
+              <p>{error}</p>
+              {(errorKind === 'network' || errorKind === 'server-error' || errorKind === 'rate-limit') && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onAnalyze(n)}
+                    disabled={!providerReady}
+                    className="rounded border border-red-400 bg-white px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Retry
+                  </button>
+                  {onSwitchToWebLLM && (
+                    <button
+                      type="button"
+                      onClick={onSwitchToWebLLM}
+                      className="rounded border border-zinc-400 bg-white px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+                    >
+                      Switch to WebLLM
+                    </button>
+                  )}
+                </div>
+              )}
+              {errorKind === 'spend-cap' && onSwitchToWebLLM && (
+                <div className="mt-2">
+                  <button
+                    type="button"
+                    onClick={onSwitchToWebLLM}
+                    className="rounded border border-zinc-400 bg-white px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+                  >
+                    Switch to WebLLM
+                  </button>
+                </div>
+              )}
             </div>
           )}
           <button
