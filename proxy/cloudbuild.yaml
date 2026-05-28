@@ -1,0 +1,40 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - gcr.io/$PROJECT_ID/meta-model-analyzer-proxy:$SHORT_SHA
+      - -t
+      - gcr.io/$PROJECT_ID/meta-model-analyzer-proxy:latest
+      - proxy
+    id: build
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - gcr.io/$PROJECT_ID/meta-model-analyzer-proxy
+    id: push
+    waitFor: [build]
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - meta-model-analyzer-proxy
+      - --image=gcr.io/$PROJECT_ID/meta-model-analyzer-proxy:$SHORT_SHA
+      - --region=us-central1
+      - --platform=managed
+      - --allow-unauthenticated
+      - --port=8080
+      - --set-env-vars=GOOGLE_CLOUD_PROJECT=$PROJECT_ID
+    id: deploy
+    waitFor: [push]
+
+images:
+  - gcr.io/$PROJECT_ID/meta-model-analyzer-proxy:$SHORT_SHA
+  - gcr.io/$PROJECT_ID/meta-model-analyzer-proxy:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
