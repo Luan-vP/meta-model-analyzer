@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
 import { generateRequestId, hashIp, logRequest } from './logger.js'
+import { rateLimitMiddleware } from './middleware/rate-limit.js'
 
 const SECRET_NAME = 'meta-model-analyzer-anthropic-key'
 const ANTHROPIC_API_BASE = 'https://api.anthropic.com'
@@ -88,7 +89,7 @@ async function getAnthropicApiKey(): Promise<string> {
 
 app.get('/healthz', (c) => c.json({ status: 'ok' }))
 
-app.post('/v1/messages', async (c) => {
+app.post('/v1/messages', rateLimitMiddleware, async (c) => {
   const requestId = generateRequestId()
   const rawIp =
     c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -96,6 +97,7 @@ app.post('/v1/messages', async (c) => {
     ''
   const ipHash = rawIp ? hashIp(rawIp) : 'unknown'
   const startMs = Date.now()
+
 
   let apiKey: string
   try {
