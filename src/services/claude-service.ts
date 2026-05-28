@@ -1,37 +1,26 @@
-import Anthropic from '@anthropic-ai/sdk'
 import type { LLMService } from '../types/llm'
 import type { Annotation } from '../types/analysis'
 import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage, parseAnnotationsJSON } from './prompt'
 
 const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-5'
+const PROXY_URL = (import.meta.env.VITE_PROXY_URL as string | undefined) ?? ''
 
 export class ClaudeService implements LLMService {
   readonly providerName = 'Claude'
-  private client: Anthropic | null = null
-  private apiKey: string
-
-  constructor(apiKey: string) {
-    this.apiKey = apiKey
-  }
 
   isReady(): boolean {
-    return this.apiKey.length > 0
+    return true
   }
 
   async initialize(): Promise<void> {
-    this.client = new Anthropic({
-      apiKey: this.apiKey,
-      dangerouslyAllowBrowser: true,
-    })
+    // no-op: proxy requires no client initialisation
   }
 
   async analyze(text: string): Promise<Annotation[]> {
-    if (!this.client) {
-      await this.initialize()
-    }
-
-    const response = await this.client!.messages.create(
-      {
+    const res = await fetch(`${PROXY_URL}/v1/messages`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         model: DEFAULT_CLAUDE_MODEL,
         max_tokens: 4096,
         system: SYSTEM_PROMPT,
@@ -41,14 +30,16 @@ export class ClaudeService implements LLMService {
             content: buildUserMessage(text) + '\n\nRespond with ONLY a JSON object matching this schema: ' + JSON.stringify(ANNOTATION_JSON_SCHEMA),
           },
         ],
-      },
-      {
-        headers: {
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-      },
-    )
+      }),
+    })
 
+    if (!res.ok) {
+      const err = new Error(`Proxy error ${res.status}`) as Error & { status: number }
+      err.status = res.status
+      throw err
+    }
+
+    const response = await res.json()
     const content = response.content[0]
     if (content.type !== 'text') {
       throw new Error('Unexpected response type from Claude')
@@ -57,7 +48,6 @@ export class ClaudeService implements LLMService {
     const parsed = parseAnnotationsJSON(content.text) as { annotations?: unknown }
     const rawAnnotations = parsed.annotations ?? parsed
 
-    // Validate against schema
     const validated = (Array.isArray(rawAnnotations) ? rawAnnotations : []).filter(
       (a: Record<string, unknown>) =>
         typeof a.text === 'string' &&
@@ -72,6 +62,6 @@ export class ClaudeService implements LLMService {
   }
 
   dispose(): void {
-    this.client = null
+    // no-op
   }
 }

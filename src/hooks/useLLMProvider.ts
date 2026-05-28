@@ -29,13 +29,7 @@ export function useLLMProvider(provider: ProviderType, apiKey: string, webllmMod
     setError(null)
 
     if (provider === 'claude') {
-      if (!apiKey) {
-        setError('Please enter your Claude API key')
-        setService(null)
-        serviceRef.current = null
-        return
-      }
-      const svc = new ClaudeService(apiKey)
+      const svc = new ClaudeService()
       await svc.initialize()
       serviceRef.current = svc
       setService(svc)

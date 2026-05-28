@@ -1,5 +1,3 @@
-import Anthropic from '@anthropic-ai/sdk'
-
 export type ProxyErrorKind = 'network' | 'rate-limit' | 'spend-cap' | 'server-error' | 'auth' | 'unknown'
 
 export interface ClassifiedError {
@@ -8,24 +6,26 @@ export interface ClassifiedError {
 }
 
 export function classifyProxyError(e: unknown): ClassifiedError {
-  if (e instanceof Anthropic.APIConnectionError || e instanceof Anthropic.APIConnectionTimeoutError) {
+  // fetch throws TypeError on network failure (no response)
+  if (e instanceof TypeError) {
     return {
       kind: 'network',
       message: 'Network unreachable — check your connection and retry, or switch to WebLLM.',
     }
   }
-  if (e instanceof Anthropic.APIStatusError) {
-    if (e.status === 429) {
+  const status = (e as { status?: number }).status
+  if (typeof status === 'number') {
+    if (status === 429) {
       return { kind: 'rate-limit', message: 'Rate limited — please wait a few minutes, then retry.' }
     }
-    if (e.status === 402) {
+    if (status === 402) {
       return { kind: 'spend-cap', message: 'Daily spend cap reached — requests will resume tomorrow.' }
     }
-    if (e.status === 401 || e.status === 403) {
-      return { kind: 'auth', message: 'Authentication failed — check your API key in Settings.' }
+    if (status === 401 || status === 403) {
+      return { kind: 'auth', message: 'Authentication failed — proxy authentication error.' }
     }
-    if (e.status >= 500) {
-      return { kind: 'server-error', message: `Service unavailable (${e.status}) — please retry or switch to WebLLM.` }
+    if (status >= 500) {
+      return { kind: 'server-error', message: `Service unavailable (${status}) — please retry or switch to WebLLM.` }
     }
   }
   return { kind: 'unknown', message: e instanceof Error ? e.message : 'Analysis failed' }
