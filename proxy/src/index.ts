@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
+import { generateRequestId, hashIp, logRequest } from './logger.js'
 
 const SECRET_NAME = 'meta-model-analyzer-anthropic-key'
 const ANTHROPIC_API_BASE = 'https://api.anthropic.com'
@@ -39,11 +40,28 @@ async function getAnthropicApiKey(): Promise<string> {
 app.get('/healthz', (c) => c.json({ status: 'ok' }))
 
 app.post('/v1/messages', async (c) => {
+  const requestId = generateRequestId()
+  const rawIp =
+    c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
+    c.req.header('x-real-ip') ??
+    ''
+  const ipHash = rawIp ? hashIp(rawIp) : 'unknown'
+  const startMs = Date.now()
+
   let apiKey: string
   try {
     apiKey = await getAnthropicApiKey()
   } catch (err) {
     console.error('Failed to retrieve Anthropic API key:', err)
+    logRequest({
+      request_id: requestId,
+      ip_hash: ipHash,
+      model: null,
+      tokens_in: null,
+      tokens_out: null,
+      latency_ms: Date.now() - startMs,
+      status: 503,
+    })
     return c.json(
       { type: 'error', error: { type: 'api_error', message: 'Service unavailable' } },
       503,
@@ -51,6 +69,16 @@ app.post('/v1/messages', async (c) => {
   }
 
   const body = await c.req.text()
+
+  let model: string | null = null
+  let isStream = false
+  try {
+    const parsed = JSON.parse(body) as Record<string, unknown>
+    model = typeof parsed.model === 'string' ? parsed.model : null
+    isStream = parsed.stream === true
+  } catch {
+    // not valid JSON — log with null model
+  }
 
   const upstreamHeaders: Record<string, string> = {
     'content-type': 'application/json',
@@ -70,13 +98,63 @@ app.post('/v1/messages', async (c) => {
     })
   } catch (err) {
     console.error('Failed to reach Anthropic API:', err)
+    logRequest({
+      request_id: requestId,
+      ip_hash: ipHash,
+      model,
+      tokens_in: null,
+      tokens_out: null,
+      latency_ms: Date.now() - startMs,
+      status: 502,
+    })
     return c.json(
       { type: 'error', error: { type: 'api_error', message: 'Failed to reach upstream' } },
       502,
     )
   }
 
+  const latencyMs = Date.now() - startMs
   const contentType = upstream.headers.get('content-type') ?? 'application/json'
+
+  // For non-streaming 200 responses, buffer to extract token usage
+  if (!isStream && upstream.status === 200) {
+    const responseText = await upstream.text()
+    let tokensIn: number | null = null
+    let tokensOut: number | null = null
+    try {
+      const responseJson = JSON.parse(responseText) as {
+        usage?: { input_tokens?: number; output_tokens?: number }
+      }
+      tokensIn = responseJson.usage?.input_tokens ?? null
+      tokensOut = responseJson.usage?.output_tokens ?? null
+    } catch {
+      // ignore
+    }
+    logRequest({
+      request_id: requestId,
+      ip_hash: ipHash,
+      model,
+      tokens_in: tokensIn,
+      tokens_out: tokensOut,
+      latency_ms: latencyMs,
+      status: upstream.status,
+    })
+    return new Response(responseText, {
+      status: upstream.status,
+      headers: { 'content-type': contentType },
+    })
+  }
+
+  // Streaming or non-200 responses — pass through without buffering
+  logRequest({
+    request_id: requestId,
+    ip_hash: ipHash,
+    model,
+    tokens_in: null,
+    tokens_out: null,
+    latency_ms: latencyMs,
+    status: upstream.status,
+  })
   return new Response(upstream.body, {
     status: upstream.status,
     headers: { 'content-type': contentType },
