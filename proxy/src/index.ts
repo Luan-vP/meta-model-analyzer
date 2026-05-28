@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { serve } from '@hono/node-server'
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
+import { generateRequestId, hashIp, logRequest } from './logger.js'
 import { createSpendCapMiddleware } from './middleware/spendCap.js'
 import { recordSpend } from './firestore/index.js'
 import { computeCostUsd } from './pricing.js'
@@ -9,6 +10,22 @@ const SECRET_NAME = 'meta-model-analyzer-anthropic-key'
 const ANTHROPIC_API_BASE = 'https://api.anthropic.com'
 const DEFAULT_ANTHROPIC_VERSION = '2023-06-01'
 const DEFAULT_DAILY_CAP_USD = 10.0
+
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://meta-model-analyzer-6frhukghgq-uc.a.run.app',
+  'http://localhost:5173',
+  'http://localhost:4173',
+]
+
+function buildAllowedOrigins(): Set<string> {
+  const env = process.env.PROXY_ALLOWED_ORIGINS
+  if (env) {
+    return new Set(env.split(',').map((o) => o.trim()).filter(Boolean))
+  }
+  return new Set(DEFAULT_ALLOWED_ORIGINS)
+}
+
+const allowedOrigins = buildAllowedOrigins()
 
 const app = new Hono()
 const port = Number(process.env.PORT ?? 8081)
@@ -40,14 +57,13 @@ async function getAnthropicApiKey(): Promise<string> {
   const payload = version.payload?.data
   if (!payload) throw new Error('Secret payload is empty')
 
-  cachedApiKey =
-    payload instanceof Uint8Array ? Buffer.from(payload).toString('utf-8') : String(payload)
+  cachedApiKey = payload instanceof Uint8Array ? Buffer.from(payload).toString('utf-8') : String(payload)
   return cachedApiKey
 }
 
 /**
- * Returns a TransformStream that passthrough all bytes unchanged while
- * intercepting Anthropic SSE events to extract token usage for spend tracking.
+ * Passthrough TransformStream that intercepts Anthropic SSE events to extract
+ * token usage and record spend after the stream ends.
  */
 function createSpendTrackingTransform(model: string): TransformStream<Uint8Array, Uint8Array> {
   let inputTokens = 0
@@ -84,7 +100,6 @@ function createSpendTrackingTransform(model: string): TransformStream<Uint8Array
       controller.enqueue(chunk)
     },
     flush() {
-      // flush any remaining bytes from the decoder
       const tail = decoder.decode()
       if (tail) processLine(tail)
 
@@ -98,34 +113,71 @@ function createSpendTrackingTransform(model: string): TransformStream<Uint8Array
   })
 }
 
-function recordSpendFromJsonResponse(model: string, responseText: string): void {
-  try {
-    const json = JSON.parse(responseText) as {
-      usage?: { input_tokens?: number; output_tokens?: number }
-    }
-    const inputTokens = json.usage?.input_tokens ?? 0
-    const outputTokens = json.usage?.output_tokens ?? 0
-    if (inputTokens > 0 || outputTokens > 0) {
-      const costUsd = computeCostUsd(model, inputTokens, outputTokens)
-      recordSpend({ inputTokens, outputTokens, costUsd }).catch((err) =>
-        console.error('[spend] Failed to record spend:', err),
-      )
-    }
-  } catch {
-    // not a parseable JSON response — skip
+// CORS gate — must run before all other middleware
+app.use('*', async (c, next) => {
+  const origin = c.req.header('origin')
+
+  if (!origin) {
+    return next()
   }
-}
+
+  if (!allowedOrigins.has(origin)) {
+    return c.json(
+      { type: 'error', error: { type: 'forbidden', message: 'Origin not allowed' } },
+      403,
+    )
+  }
+
+  if (c.req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, anthropic-version, anthropic-beta',
+        'Access-Control-Max-Age': '86400',
+        'Vary': 'Origin',
+      },
+    })
+  }
+
+  await next()
+
+  c.header('Access-Control-Allow-Origin', origin)
+  c.header('Vary', 'Origin')
+})
+
+// Rate-limit middleware (issue #21, PR #36) will be inserted here:
+// app.use('/v1/messages', createRateLimitMiddleware())
+
+// Daily spend-cap circuit breaker — short-circuits before the upstream fetch
+app.use('/v1/messages', createSpendCapMiddleware(dailyCapUsd))
 
 app.get('/healthz', (c) => c.json({ status: 'ok' }))
 
-app.use('/v1/messages', createSpendCapMiddleware(dailyCapUsd))
-
 app.post('/v1/messages', async (c) => {
+  const requestId = generateRequestId()
+  const rawIp =
+    c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
+    c.req.header('x-real-ip') ??
+    ''
+  const ipHash = rawIp ? hashIp(rawIp) : 'unknown'
+  const startMs = Date.now()
+
   let apiKey: string
   try {
     apiKey = await getAnthropicApiKey()
   } catch (err) {
     console.error('Failed to retrieve Anthropic API key:', err)
+    logRequest({
+      request_id: requestId,
+      ip_hash: ipHash,
+      model: null,
+      tokens_in: null,
+      tokens_out: null,
+      latency_ms: Date.now() - startMs,
+      status: 503,
+    })
     return c.json(
       { type: 'error', error: { type: 'api_error', message: 'Service unavailable' } },
       503,
@@ -134,12 +186,12 @@ app.post('/v1/messages', async (c) => {
 
   const body = await c.req.text()
 
-  let model = 'unknown'
+  let model: string | null = null
   try {
-    const parsed = JSON.parse(body) as { model?: string }
-    if (typeof parsed.model === 'string') model = parsed.model
+    const parsed = JSON.parse(body) as Record<string, unknown>
+    model = typeof parsed.model === 'string' ? parsed.model : null
   } catch {
-    // invalid request body — proceed with unknown model (conservative pricing applies)
+    // not valid JSON — log with null model
   }
 
   const upstreamHeaders: Record<string, string> = {
@@ -160,25 +212,90 @@ app.post('/v1/messages', async (c) => {
     })
   } catch (err) {
     console.error('Failed to reach Anthropic API:', err)
+    logRequest({
+      request_id: requestId,
+      ip_hash: ipHash,
+      model,
+      tokens_in: null,
+      tokens_out: null,
+      latency_ms: Date.now() - startMs,
+      status: 502,
+    })
     return c.json(
       { type: 'error', error: { type: 'api_error', message: 'Failed to reach upstream' } },
       502,
     )
   }
 
+  const latencyMs = Date.now() - startMs
   const contentType = upstream.headers.get('content-type') ?? 'application/json'
 
   if (contentType.includes('text/event-stream') && upstream.body) {
-    return new Response(upstream.body.pipeThrough(createSpendTrackingTransform(model)), {
+    logRequest({
+      request_id: requestId,
+      ip_hash: ipHash,
+      model,
+      tokens_in: null,
+      tokens_out: null,
+      latency_ms: latencyMs,
+      status: upstream.status,
+    })
+    return new Response(
+      upstream.body.pipeThrough(createSpendTrackingTransform(model ?? 'unknown')),
+      {
+        status: upstream.status,
+        headers: { 'content-type': contentType },
+      },
+    )
+  }
+
+  const responseText = await upstream.text()
+
+  if (upstream.status === 200) {
+    let tokensIn: number | null = null
+    let tokensOut: number | null = null
+    try {
+      const responseJson = JSON.parse(responseText) as {
+        usage?: { input_tokens?: number; output_tokens?: number }
+      }
+      tokensIn = responseJson.usage?.input_tokens ?? null
+      tokensOut = responseJson.usage?.output_tokens ?? null
+    } catch {
+      // ignore
+    }
+
+    logRequest({
+      request_id: requestId,
+      ip_hash: ipHash,
+      model,
+      tokens_in: tokensIn,
+      tokens_out: tokensOut,
+      latency_ms: latencyMs,
+      status: upstream.status,
+    })
+
+    if (tokensIn !== null || tokensOut !== null) {
+      const costUsd = computeCostUsd(model ?? 'unknown', tokensIn ?? 0, tokensOut ?? 0)
+      recordSpend({ inputTokens: tokensIn ?? 0, outputTokens: tokensOut ?? 0, costUsd }).catch(
+        (err) => console.error('[spend] Failed to record spend:', err),
+      )
+    }
+
+    return new Response(responseText, {
       status: upstream.status,
       headers: { 'content-type': contentType },
     })
   }
 
-  const responseText = await upstream.text()
-  if (upstream.status === 200) {
-    recordSpendFromJsonResponse(model, responseText)
-  }
+  logRequest({
+    request_id: requestId,
+    ip_hash: ipHash,
+    model,
+    tokens_in: null,
+    tokens_out: null,
+    latency_ms: latencyMs,
+    status: upstream.status,
+  })
   return new Response(responseText, {
     status: upstream.status,
     headers: { 'content-type': contentType },
