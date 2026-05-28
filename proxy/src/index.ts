@@ -7,8 +7,57 @@ const SECRET_NAME = 'meta-model-analyzer-anthropic-key'
 const ANTHROPIC_API_BASE = 'https://api.anthropic.com'
 const DEFAULT_ANTHROPIC_VERSION = '2023-06-01'
 
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://meta-model-analyzer-6frhukghgq-uc.a.run.app',
+  'http://localhost:5173',
+  'http://localhost:4173',
+]
+
+function buildAllowedOrigins(): Set<string> {
+  const env = process.env.PROXY_ALLOWED_ORIGINS
+  if (env) {
+    return new Set(env.split(',').map((o) => o.trim()).filter(Boolean))
+  }
+  return new Set(DEFAULT_ALLOWED_ORIGINS)
+}
+
+const allowedOrigins = buildAllowedOrigins()
+
 const app = new Hono()
 const port = Number(process.env.PORT ?? 8081)
+
+app.use('*', async (c, next) => {
+  const origin = c.req.header('origin')
+
+  if (!origin) {
+    return next()
+  }
+
+  if (!allowedOrigins.has(origin)) {
+    return c.json(
+      { type: 'error', error: { type: 'forbidden', message: 'Origin not allowed' } },
+      403,
+    )
+  }
+
+  if (c.req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, anthropic-version, anthropic-beta',
+        'Access-Control-Max-Age': '86400',
+        'Vary': 'Origin',
+      },
+    })
+  }
+
+  await next()
+
+  c.header('Access-Control-Allow-Origin', origin)
+  c.header('Vary', 'Origin')
+})
 
 let cachedApiKey: string | null = null
 
