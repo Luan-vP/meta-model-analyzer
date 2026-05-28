@@ -3,6 +3,7 @@ import { serve } from '@hono/node-server'
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
 import { generateRequestId, hashIp, logRequest } from './logger.js'
 import { createSpendCapMiddleware } from './middleware/spendCap.js'
+import { rateLimitMiddleware } from './middleware/rate-limit.js'
 import { recordSpend } from './firestore/index.js'
 import { computeCostUsd } from './pricing.js'
 
@@ -148,15 +149,14 @@ app.use('*', async (c, next) => {
   c.header('Vary', 'Origin')
 })
 
-// Rate-limit middleware (issue #21, PR #36) will be inserted here:
-// app.use('/v1/messages', createRateLimitMiddleware())
-
-// Daily spend-cap circuit breaker — short-circuits before the upstream fetch
+// Per-IP token-bucket rate limit (issue #21) runs as route middleware on
+// /v1/messages below; the daily spend-cap circuit breaker short-circuits here
+// before the upstream fetch.
 app.use('/v1/messages', createSpendCapMiddleware(dailyCapUsd))
 
 app.get('/healthz', (c) => c.json({ status: 'ok' }))
 
-app.post('/v1/messages', async (c) => {
+app.post('/v1/messages', rateLimitMiddleware, async (c) => {
   const requestId = generateRequestId()
   const rawIp =
     c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -164,6 +164,7 @@ app.post('/v1/messages', async (c) => {
     ''
   const ipHash = rawIp ? hashIp(rawIp) : 'unknown'
   const startMs = Date.now()
+
 
   let apiKey: string
   try {
