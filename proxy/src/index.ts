@@ -3,6 +3,8 @@ import { serve } from '@hono/node-server'
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager'
 import { generateRequestId, hashIp, logRequest } from './logger.js'
 import { rateLimitMiddleware } from './middleware/rate-limit.js'
+import { spendCapMiddleware } from './middleware/spend-cap.js'
+import { recordSpend } from './firestore/spend.js'
 
 const SECRET_NAME = 'meta-model-analyzer-anthropic-key'
 const ANTHROPIC_API_BASE = 'https://api.anthropic.com'
@@ -60,6 +62,19 @@ app.use('*', async (c, next) => {
   c.header('Vary', 'Origin')
 })
 
+const MODEL_PRICE_USD: Record<string, { input: number; output: number }> = {
+  'claude-haiku-4-5-20251001': { input: 0.8e-6, output: 4e-6 },
+  'claude-sonnet-4-5': { input: 3e-6, output: 15e-6 },
+  'claude-sonnet-4-6': { input: 3e-6, output: 15e-6 },
+  'claude-opus-4-8': { input: 15e-6, output: 75e-6 },
+}
+const DEFAULT_PRICE = { input: 3e-6, output: 15e-6 }
+
+function computeCostUsd(model: string | null, tokensIn: number, tokensOut: number): number {
+  const price = (model && MODEL_PRICE_USD[model]) ?? DEFAULT_PRICE
+  return tokensIn * price.input + tokensOut * price.output
+}
+
 let cachedApiKey: string | null = null
 
 async function getAnthropicApiKey(): Promise<string> {
@@ -89,7 +104,7 @@ async function getAnthropicApiKey(): Promise<string> {
 
 app.get('/healthz', (c) => c.json({ status: 'ok' }))
 
-app.post('/v1/messages', rateLimitMiddleware, async (c) => {
+app.post('/v1/messages', rateLimitMiddleware, spendCapMiddleware, async (c) => {
   const requestId = generateRequestId()
   const rawIp =
     c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ??
@@ -190,6 +205,12 @@ app.post('/v1/messages', rateLimitMiddleware, async (c) => {
       latency_ms: latencyMs,
       status: upstream.status,
     })
+    if (tokensIn !== null && tokensOut !== null) {
+      const costUsd = computeCostUsd(model, tokensIn, tokensOut)
+      recordSpend({ inputTokens: tokensIn, outputTokens: tokensOut, costUsd }).catch((err) => {
+        console.error('Failed to record spend:', err)
+      })
+    }
     return new Response(responseText, {
       status: upstream.status,
       headers: { 'content-type': contentType },

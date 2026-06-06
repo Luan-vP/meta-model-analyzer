@@ -1,77 +1,79 @@
-# React + TypeScript + Vite
+# Meta-Model Analyzer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Detect linguistic patterns from Bandler & Grinder's Meta-Model of Language. Paste any text and the app highlights violations — deletions, distortions, and generalizations — with hover tooltips showing challenge questions.
+
+Live: <https://meta-model-analyzer-6frhukghgq-uc.a.run.app>
+
+## Providers
+
+| Provider | How it works |
+|----------|-------------|
+| **Claude** (default) | Requests route through a shared GCP proxy. No API key needed. Subject to per-IP rate limits and a daily spend cap. |
+| **Local (WebLLM)** | Runs a quantised model in your browser via WebGPU. No network calls after the initial download. |
+
+## Architecture
+
+```
+Browser (React/Vite)
+  └─ fetch POST /v1/messages
+        └─ Proxy (Hono, Cloud Run)
+              ├─ CORS origin allowlist
+              ├─ Per-IP token-bucket rate limit  ← Firestore
+              ├─ Global daily spend cap          ← Firestore
+              ├─ Structured Cloud Logging
+              └─ Anthropic API  (key from Secret Manager)
+```
+
+## Development
+
+```bash
+# Frontend
+npm install
+npm run dev          # http://localhost:5173
+
+# Proxy (separate terminal)
+cd proxy
+npm install
+ANTHROPIC_API_KEY=sk-ant-... npm run dev   # http://localhost:8081
+```
+
+Set `VITE_PROXY_URL=http://localhost:8081` (or `.env.local`) so the frontend hits your local proxy.
+
+## Deployment
+
+Both services deploy to Google Cloud Run automatically on push to `main`.
+
+| Service | Cloud Run name | Trigger |
+|---------|---------------|---------|
+| Frontend | `meta-model-analyzer` | root `Dockerfile` + Cloud Build trigger |
+| Proxy | `meta-model-analyzer-proxy` | `proxy/cloudbuild.yaml` + Cloud Build trigger |
+
+### Required GCP resources (one-time manual setup)
+
+| Resource | Purpose |
+|----------|---------|
+| Secret Manager secret `meta-model-analyzer-anthropic-key` | Holds the Anthropic API key |
+| Firestore (native mode) | Rate-limit state + daily spend tracking |
+| Cloud Build triggers (× 2) | Auto-build on push to `main` |
+
+### Environment variables
+
+**Proxy (Cloud Run)**
+
+| Var | Default | Notes |
+|-----|---------|-------|
+| `GOOGLE_CLOUD_PROJECT` | — | Required in production |
+| `ANTHROPIC_API_KEY` | — | Local dev override (skips Secret Manager) |
+| `DAILY_SPEND_CAP_USD` | `5.0` | Hard stop when daily spend exceeds this |
+| `PROXY_ALLOWED_ORIGINS` | prod + localhost | Comma-separated origin allowlist |
+| `PORT` | `8081` | Listening port |
+
+**Frontend (build-time)**
+
+| Var | Default | Notes |
+|-----|---------|-------|
+| `VITE_PROXY_URL` | `http://localhost:8081` | Proxy URL injected at build time |
 
 ## Claude Code skill: NLP Meta-Model distortions
 
-This repo ships a Claude Code skill at [`.claude/skills/distortions/SKILL.md`](.claude/skills/distortions/SKILL.md) that packages the 13-type Meta-Model distortions catalogue (descriptions, signal words, canonical examples, challenge questions, and the annotation JSON schema). Any `claude` session started inside this repo can load it on demand when asked about meta-model violations, linguistic distortions, or Bandler & Grinder's Meta-Model — making the repo's knowledge usable outside the web app.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+This repo ships a Claude Code skill at [`.claude/skills/distortions/SKILL.md`](.claude/skills/distortions/SKILL.md) that packages the 13-type Meta-Model distortions catalogue (descriptions, signal words, canonical examples, challenge questions, and the annotation JSON schema). Any `claude` session started inside this repo can load it on demand when asked about meta-model violations, linguistic distortions, or Bandler & Grinder's Meta-Model.

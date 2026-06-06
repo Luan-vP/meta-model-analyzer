@@ -1,63 +1,69 @@
-import Anthropic from '@anthropic-ai/sdk'
 import type { LLMService } from '../types/llm'
 import type { Annotation } from '../types/analysis'
 import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage, parseAnnotationsJSON } from './prompt'
+import { ProxyFetchError } from './proxy-error'
 
 const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-5'
+const PROXY_URL = (import.meta.env.VITE_PROXY_URL as string | undefined) ?? 'http://localhost:8081'
 
 export class ClaudeService implements LLMService {
   readonly providerName = 'Claude'
-  private client: Anthropic | null = null
-  private apiKey: string
-
-  constructor(apiKey: string) {
-    this.apiKey = apiKey
-  }
 
   isReady(): boolean {
-    return this.apiKey.length > 0
+    return true
   }
 
   async initialize(): Promise<void> {
-    this.client = new Anthropic({
-      apiKey: this.apiKey,
-      dangerouslyAllowBrowser: true,
-    })
+    // No-op: proxy requires no client-side credentials
   }
 
   async analyze(text: string): Promise<Annotation[]> {
-    if (!this.client) {
-      await this.initialize()
+    let response: Response
+    try {
+      response = await fetch(`${PROXY_URL}/v1/messages`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model: DEFAULT_CLAUDE_MODEL,
+          max_tokens: 4096,
+          system: SYSTEM_PROMPT,
+          messages: [
+            {
+              role: 'user',
+              content: buildUserMessage(text) + '\n\nRespond with ONLY a JSON object matching this schema: ' + JSON.stringify(ANNOTATION_JSON_SCHEMA),
+            },
+          ],
+        }),
+      })
+    } catch (e) {
+      throw new ProxyFetchError('network', 0, e instanceof Error ? e.message : 'Network error')
     }
 
-    const response = await this.client!.messages.create(
-      {
-        model: DEFAULT_CLAUDE_MODEL,
-        max_tokens: 4096,
-        system: SYSTEM_PROMPT,
-        messages: [
-          {
-            role: 'user',
-            content: buildUserMessage(text) + '\n\nRespond with ONLY a JSON object matching this schema: ' + JSON.stringify(ANNOTATION_JSON_SCHEMA),
-          },
-        ],
-      },
-      {
-        headers: {
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-      },
-    )
+    if (response.status === 429) {
+      throw new ProxyFetchError('rate-limit', 429, 'Rate limit exceeded')
+    }
+    if (response.status === 402) {
+      throw new ProxyFetchError('spend-cap', 402, 'Daily spend cap reached')
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw new ProxyFetchError('auth', response.status, 'Authentication failed')
+    }
+    if (!response.ok) {
+      throw new ProxyFetchError('server-error', response.status, `Proxy returned ${response.status}`)
+    }
 
-    const content = response.content[0]
-    if (content.type !== 'text') {
+    const json = await response.json() as { content?: Array<{ type: string; text?: string }> }
+    const content = json.content?.[0]
+    if (!content || content.type !== 'text' || !content.text) {
       throw new Error('Unexpected response type from Claude')
     }
 
     const parsed = parseAnnotationsJSON(content.text) as { annotations?: unknown }
     const rawAnnotations = parsed.annotations ?? parsed
 
-    // Validate against schema
     const validated = (Array.isArray(rawAnnotations) ? rawAnnotations : []).filter(
       (a: Record<string, unknown>) =>
         typeof a.text === 'string' &&
@@ -72,6 +78,6 @@ export class ClaudeService implements LLMService {
   }
 
   dispose(): void {
-    this.client = null
+    // No-op
   }
 }

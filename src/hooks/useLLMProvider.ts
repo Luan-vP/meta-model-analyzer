@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import type { ProviderType, LLMService } from '../types/llm'
 import { ClaudeService } from '../services/claude-service'
 
-export function useLLMProvider(provider: ProviderType, apiKey: string, webllmModel: string) {
+export function useLLMProvider(provider: ProviderType, webllmModel: string) {
   const [service, setService] = useState<LLMService | null>(null)
   const [ready, setReady] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -22,26 +22,18 @@ export function useLLMProvider(provider: ProviderType, apiKey: string, webllmMod
   }, [])
 
   const initializeProvider = useCallback(async () => {
-    // Dispose previous service
     serviceRef.current?.dispose()
     cancelledRef.current = false
     setReady(false)
     setError(null)
 
     if (provider === 'claude') {
-      if (!apiKey) {
-        setError('Please enter your Claude API key')
-        setService(null)
-        serviceRef.current = null
-        return
-      }
-      const svc = new ClaudeService(apiKey)
+      const svc = new ClaudeService()
       await svc.initialize()
       serviceRef.current = svc
       setService(svc)
       setReady(true)
     } else {
-      // WebLLM — don't load anything until the user has picked a model.
       if (!webllmModel) {
         setService(null)
         serviceRef.current = null
@@ -66,7 +58,7 @@ export function useLLMProvider(provider: ProviderType, apiKey: string, webllmMod
         if (!cancelledRef.current) setLoading(false)
       }
     }
-  }, [provider, apiKey, webllmModel])
+  }, [provider, webllmModel])
 
   useEffect(() => {
     initializeProvider()
