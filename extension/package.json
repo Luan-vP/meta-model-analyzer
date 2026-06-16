@@ -1,0 +1,15 @@
+{
+  "name": "meta-model-analyzer-extension",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && node build.mjs",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts,.tsx"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.270",
+    "typescript": "~5.9.3"
+  }
+}

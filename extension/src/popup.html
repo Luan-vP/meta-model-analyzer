@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meta-Model Analyzer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      color: #18181b;
+      background: #fafafa;
+    }
+    .header {
+      padding: 16px;
+      border-bottom: 1px solid #e4e4e7;
+      background: #fff;
+    }
+    .header h1 {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .header p {
+      font-size: 11px;
+      color: #71717a;
+      margin-top: 2px;
+    }
+    .settings {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #52525b;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .field input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #e4e4e7;
+      border-radius: 6px;
+      font-size: 13px;
+      background: #fff;
+      color: #18181b;
+    }
+    .field input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 2px rgba(99,102,241,0.15);
+    }
+    .field .hint {
+      font-size: 10px;
+      color: #a1a1aa;
+      margin-top: 3px;
+    }
+    .actions {
+      padding: 0 16px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary {
+      background: #6366f1;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #4f46e5;
+    }
+    .btn-primary:disabled {
+      background: #d4d4d8;
+      color: #a1a1aa;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background: #f4f4f5;
+      color: #52525b;
+    }
+    .btn-secondary:hover {
+      background: #e4e4e7;
+    }
+    .status {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #71717a;
+      border-top: 1px solid #e4e4e7;
+      background: #fff;
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #d4d4d8;
+    }
+    .status-dot.connected {
+      background: #22c55e;
+    }
+    .status-dot.error {
+      background: #ef4444;
+    }
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #e4e4e7;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🧠 Meta-Model Analyzer</h1>
+    <p>Select text on any page, then click "Analyze Selection"</p>
+  </div>
+
+  <div class="settings">
+    <div class="field">
+      <label for="ollama-url">Ollama URL</label>
+      <input id="ollama-url" type="text" value="http://localhost:11434" />
+      <div class="hint">Where Ollama is running</div>
+    </div>
+    <div class="field">
+      <label for="model-name">Model</label>
+      <input id="model-name" type="text" value="llama3.1:8b" />
+      <div class="hint">Any Ollama model (e.g., llama3.2, qwen2.5:7b)</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button id="btn-analyze" class="btn btn-primary" disabled>Analyze Selection</button>
+    <button id="btn-check" class="btn btn-secondary">Check Ollama Connection</button>
+  </div>
+
+  <div class="status">
+    <span class="status-dot" id="status-dot"></span>
+    <span id="status-text">Not checked</span>
+  </div>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

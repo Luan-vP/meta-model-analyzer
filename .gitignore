@@ -24,3 +24,9 @@ dist-ssr
 *.sw?
 .playwright-mcp
 benchmark-results-*.json
+
+# Per-machine record of realized conductr schedules (launchd/cron locations).
+.conductr-local
+
+# Generated Meta-Model analysis renders (output of the meta-model-analyzer skill).
+meta-model-analysis*.html
