@@ -22,9 +22,19 @@ export class OllamaService {
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: buildUserMessage(text) },
         ],
-        temperature: 0.1,
+        // `temperature` must live under `options` — Ollama ignores it at the top
+        // level. `think: false` keeps reasoning-capable models from spending the
+        // whole response in a (discarded) thinking phase and returning empty
+        // content. Both are no-ops for models that don't support them.
+        think: false,
         stream: false,
         format: 'json',
+        // Cap the context window. Ollama otherwise loads the model at its full
+        // native context (e.g. 131K for llama3.1:8b → ~21GB of KV cache), which
+        // OOMs the GPU mid-decode and wedges the backend so every later request
+        // returns empty. We only ever analyze a short passage, so 8K is ample
+        // and keeps the model footprint small (~5.7GB for llama3.1:8b).
+        options: { temperature: 0.1, num_ctx: 8192 },
       }),
     })
 
@@ -46,7 +56,16 @@ export class OllamaService {
     const content = data.message?.content
 
     if (!content) {
-      throw new Error('No response from Ollama')
+      // A 200 with empty content means Ollama accepted the request but the model
+      // produced nothing. The usual cause is the runner failing mid-generation —
+      // e.g. an out-of-memory crash from too large a model/context, which also
+      // wedges the backend so every later request returns empty until Ollama is
+      // restarted. Point at that rather than a dead-end "no response".
+      throw new Error(
+        'Ollama returned an empty response. The model likely failed to generate — ' +
+          'try a smaller model (e.g. llama3.1:8b) or reduce its context size, and ' +
+          'restart Ollama if every request keeps coming back empty.',
+      )
     }
 
     // Extract JSON — Ollama may wrap it in markdown
