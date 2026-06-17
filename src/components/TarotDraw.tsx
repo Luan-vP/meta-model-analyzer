@@ -10,102 +10,75 @@ const SUIT_ACCENTS: Record<TarotCard['suit'], string> = {
   pentacles: 'bg-emerald-50 text-emerald-700 border-emerald-200',
 }
 
-export function TarotDraw() {
-  const [open, setOpen] = useState(false)
+export function TarotContent() {
   const [card, setCard] = useState<TarotCard | null>(null)
   const [drawKey, setDrawKey] = useState(0)
 
   function draw() {
     const next = drawRandomCard(card)
     setCard(next)
-    setDrawKey((k) => k + 1)
+    setDrawKey(k => k + 1)
   }
 
   return (
-    <div className="fixed right-0 top-64 z-20 flex items-stretch">
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.aside
-            key="tarot-panel"
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 340, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-y border-l border-zinc-200 bg-zinc-100 paper-surface shadow-soft"
-            id="tarot-draw-panel"
+    <div className="flex flex-col gap-4">
+      <div className="flex items-baseline justify-between">
+        <h2 className="text-sm font-semibold text-zinc-800">Daily tarot</h2>
+        <span className="text-[11px] uppercase tracking-widest text-zinc-400">Upright only</span>
+      </div>
+
+      {!card ? (
+        <p className="text-sm leading-relaxed text-zinc-600">
+          Pull a single card for a moment of reflection. Meanings are drawn from{' '}
+          <a
+            href="https://labyrinthos.co/blogs/tarot-card-meanings-list"
+            target="_blank"
+            rel="noreferrer"
+            className="text-zinc-800 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-500"
           >
-            <div className="flex w-[340px] flex-col gap-4 p-5">
-              <div className="flex items-baseline justify-between">
-                <h2 className="text-sm font-semibold text-zinc-800">Daily tarot</h2>
-                <span className="text-[11px] uppercase tracking-widest text-zinc-400">Upright only</span>
+            labyrinthos
+          </a>
+          .
+        </p>
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={drawKey}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="flex flex-col gap-3"
+          >
+            <div>
+              <div className="text-xs uppercase tracking-widest text-zinc-400">
+                {SUIT_LABELS[card.suit]}
               </div>
-
-              {!card ? (
-                <p className="text-sm leading-relaxed text-zinc-600">
-                  Pull a single card for a moment of reflection. Meanings are drawn from{' '}
-                  <a
-                    href="https://labyrinthos.co/blogs/tarot-card-meanings-list"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-zinc-800 underline decoration-zinc-300 underline-offset-2 hover:decoration-zinc-500"
-                  >
-                    labyrinthos
-                  </a>
-                  .
-                </p>
-              ) : (
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={drawKey}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-                    className="flex flex-col gap-3"
-                  >
-                    <div>
-                      <div className="text-xs uppercase tracking-widest text-zinc-400">
-                        {SUIT_LABELS[card.suit]}
-                      </div>
-                      <div className="mt-0.5 text-lg font-semibold text-zinc-900">{card.name}</div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      {card.keywords.map((kw) => (
-                        <span
-                          key={kw}
-                          className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${SUIT_ACCENTS[card.suit]}`}
-                        >
-                          {kw}
-                        </span>
-                      ))}
-                    </div>
-
-                    <p className="text-sm leading-relaxed text-zinc-700">{card.meaning}</p>
-                  </motion.div>
-                </AnimatePresence>
-              )}
-
-              <button
-                type="button"
-                onClick={draw}
-                className="mt-1 rounded-md border border-zinc-200 bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
-              >
-                {card ? 'Draw another card' : 'Draw a card'}
-              </button>
+              <div className="mt-0.5 text-lg font-semibold text-zinc-900">{card.name}</div>
             </div>
-          </motion.aside>
-        )}
-      </AnimatePresence>
+
+            <div className="flex flex-wrap gap-1.5">
+              {card.keywords.map(kw => (
+                <span
+                  key={kw}
+                  className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${SUIT_ACCENTS[card.suit]}`}
+                >
+                  {kw}
+                </span>
+              ))}
+            </div>
+
+            <p className="text-sm leading-relaxed text-zinc-700">{card.meaning}</p>
+          </motion.div>
+        </AnimatePresence>
+      )}
+
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        aria-controls="tarot-draw-panel"
-        className="rounded-l-lg border border-r-0 border-zinc-200 bg-zinc-100 px-2 py-4 text-[11px] font-semibold uppercase tracking-widest text-zinc-600 paper-surface shadow-soft transition-colors hover:bg-zinc-50"
-        style={{ writingMode: 'vertical-rl' }}
+        onClick={draw}
+        className="mt-1 rounded-md border border-zinc-200 bg-zinc-900 px-3 py-2 text-sm font-medium text-white shadow-sm transition-colors hover:bg-zinc-800"
       >
-        Tarot
+        {card ? 'Draw another card' : 'Draw a card'}
       </button>
     </div>
   )

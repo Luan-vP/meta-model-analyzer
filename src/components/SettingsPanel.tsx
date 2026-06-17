@@ -43,7 +43,7 @@ export function SettingsPanel({
   onCancelLoading,
 }: SettingsPanelProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-100 p-4 paper-surface shadow-soft">
+    <div className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <label className="text-sm font-medium text-zinc-700">Provider</label>
         <div className="flex gap-1 rounded-md bg-zinc-200 p-0.5">
