@@ -31,7 +31,7 @@ export function TarotDraw() {
             animate={{ width: 340, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-y border-l border-zinc-200 bg-white shadow-md"
+            className="overflow-hidden border-y border-l border-zinc-200 bg-zinc-100 paper-surface shadow-soft"
             id="tarot-draw-panel"
           >
             <div className="flex w-[340px] flex-col gap-4 p-5">
@@ -102,7 +102,7 @@ export function TarotDraw() {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls="tarot-draw-panel"
-        className="rounded-l-lg border border-r-0 border-zinc-200 bg-white px-2 py-4 text-[11px] font-semibold uppercase tracking-widest text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50"
+        className="rounded-l-lg border border-r-0 border-zinc-200 bg-zinc-100 px-2 py-4 text-[11px] font-semibold uppercase tracking-widest text-zinc-600 paper-surface shadow-soft transition-colors hover:bg-zinc-50"
         style={{ writingMode: 'vertical-rl' }}
       >
         Tarot

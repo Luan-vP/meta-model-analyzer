@@ -43,14 +43,14 @@ export function SettingsPanel({
   onCancelLoading,
 }: SettingsPanelProps) {
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+    <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 bg-zinc-100 p-4 paper-surface shadow-soft">
       <div className="flex items-center gap-3">
         <label className="text-sm font-medium text-zinc-700">Provider</label>
         <div className="flex gap-1 rounded-md bg-zinc-200 p-0.5">
           <button
             onClick={() => onProviderChange('webllm')}
             className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-              provider === 'webllm' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-600 hover:text-zinc-900'
+              provider === 'webllm' ? 'bg-zinc-50 text-zinc-900 shadow-sm' : 'text-zinc-600 hover:text-zinc-900'
             }`}
           >
             Local (WebLLM)
@@ -58,7 +58,7 @@ export function SettingsPanel({
           <button
             onClick={() => onProviderChange('claude')}
             className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
-              provider === 'claude' ? 'bg-white text-zinc-900 shadow-sm' : 'text-zinc-600 hover:text-zinc-900'
+              provider === 'claude' ? 'bg-zinc-50 text-zinc-900 shadow-sm' : 'text-zinc-600 hover:text-zinc-900'
             }`}
           >
             Claude
@@ -83,7 +83,7 @@ export function SettingsPanel({
             value={apiKey}
             onChange={(e) => onApiKeyChange(e.target.value)}
             placeholder="sk-ant-..."
-            className="flex-1 rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            className="flex-1 rounded border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
           />
           <span className="text-xs text-zinc-400">Stored locally only</span>
         </div>
@@ -100,7 +100,7 @@ export function SettingsPanel({
               value={webllmModel}
               onChange={(e) => onWebllmModelChange(e.target.value)}
               disabled={providerLoading || probing}
-              className="rounded border border-zinc-300 bg-white px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-sm text-zinc-900 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <option value="">Select a model…</option>
               {webllmModels.map((m) => (
@@ -113,7 +113,7 @@ export function SettingsPanel({
               type="button"
               onClick={onProbeHardware}
               disabled={probing || providerLoading}
-              className="rounded border border-indigo-300 bg-white px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded border border-indigo-300 bg-zinc-100 px-3 py-1.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {probing ? 'Probing…' : 'Choose best model for my hardware'}
             </button>
@@ -137,7 +137,7 @@ export function SettingsPanel({
                 <button
                   type="button"
                   onClick={onCancelLoading}
-                  className="rounded border border-red-300 bg-white px-2 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-1 focus:ring-red-400"
+                  className="rounded border border-red-300 bg-zinc-100 px-2 py-0.5 text-xs font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-1 focus:ring-red-400"
                 >
                   Cancel
                 </button>

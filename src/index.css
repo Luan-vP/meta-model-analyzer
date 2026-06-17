@@ -1,6 +1,64 @@
 @import "tailwindcss";
 
+@theme {
+  /* Remap zinc to warm paper tones */
+  --color-zinc-50: #f3efe0;
+  --color-zinc-100: #ede3cf;
+  --color-zinc-200: #d6c7b1;
+  --color-zinc-300: #c8b89e;
+  --color-zinc-400: #7a6b5c;
+  --color-zinc-500: #7a6b5c;
+  --color-zinc-600: #5e5246;
+  --color-zinc-700: #3d3228;
+  --color-zinc-800: #2b2215;
+  --color-zinc-900: #2b2215;
+  --color-white: #ede3cf;
+
+  /* Remap indigo to burnt-orange accent */
+  --color-indigo-50: #f3efe0;
+  --color-indigo-300: #d4935e;
+  --color-indigo-400: #c0763b;
+  --color-indigo-500: #c0763b;
+  --color-indigo-600: #c0763b;
+  --color-indigo-700: #a05e2a;
+
+  /* Remap teal (progress bar) to accent */
+  --color-teal-500: #c0763b;
+}
+
+:root {
+  --paper-texture-page: url('/textures/paper.png');
+  --paper-texture-surface: url('/textures/handmade-paper.png');
+  --shadow-soft: 0 10px 30px rgba(60, 43, 20, 0.08);
+}
+
 body {
   margin: 0;
-  background-color: #fafafa;
+  background-color: #f3efe0;
+  background-image: var(--paper-texture-page);
+  font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+}
+
+::selection {
+  background-color: rgba(192, 118, 59, 0.25);
+}
+
+@layer utilities {
+  .paper-surface {
+    background-image: var(--paper-texture-surface);
+  }
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
 }

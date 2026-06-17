@@ -24,7 +24,7 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col gap-3 overflow-hidden rounded-xl border border-zinc-200 bg-white p-5 shadow-sm"
+      className="flex flex-col gap-3 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 p-5 paper-surface shadow-soft"
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
@@ -55,7 +55,7 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
             }
             rows={6}
             disabled={isAnalyzing}
-            className="w-full resize-y rounded-lg border border-zinc-300 bg-white px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:bg-zinc-50"
+            className="w-full resize-y rounded-lg border border-zinc-300 bg-zinc-100 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:bg-zinc-50"
           />
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
@@ -66,7 +66,7 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
                     type="button"
                     onClick={() => onAnalyze(n)}
                     disabled={!providerReady}
-                    className="rounded border border-red-400 bg-white px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="rounded border border-red-400 bg-zinc-100 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Retry
                   </button>
@@ -74,7 +74,7 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
                     <button
                       type="button"
                       onClick={onSwitchToWebLLM}
-                      className="rounded border border-zinc-400 bg-white px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
+                      className="rounded border border-zinc-400 bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50"
                     >
                       Switch to WebLLM
                     </button>

@@ -21,7 +21,7 @@ export function ResearchQuestions() {
             animate={{ width: 320, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-y border-l border-zinc-200 bg-white shadow-md"
+            className="overflow-hidden border-y border-l border-zinc-200 bg-zinc-100 paper-surface shadow-soft"
             id="research-questions-panel"
           >
             <div className="w-80 p-5">
@@ -43,7 +43,7 @@ export function ResearchQuestions() {
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         aria-controls="research-questions-panel"
-        className="rounded-l-lg border border-r-0 border-zinc-200 bg-white px-2 py-4 text-[11px] font-semibold uppercase tracking-widest text-zinc-600 shadow-sm transition-colors hover:bg-zinc-50"
+        className="rounded-l-lg border border-r-0 border-zinc-200 bg-zinc-100 px-2 py-4 text-[11px] font-semibold uppercase tracking-widest text-zinc-600 paper-surface shadow-soft transition-colors hover:bg-zinc-50"
         style={{ writingMode: 'vertical-rl' }}
       >
         Research Questions

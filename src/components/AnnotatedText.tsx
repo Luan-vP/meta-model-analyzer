@@ -12,7 +12,7 @@ export function AnnotatedText({ result }: AnnotatedTextProps) {
 
   if (annotations.length === 0) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-white p-6">
+      <div className="rounded-lg border border-zinc-200 bg-zinc-100 p-6 paper-surface shadow-soft">
         <p className="text-zinc-500">No Meta-Model violations detected in this text.</p>
       </div>
     )
@@ -71,7 +71,7 @@ export function AnnotatedText({ result }: AnnotatedTextProps) {
       </div>
 
       {/* Annotated text */}
-      <div className="whitespace-pre-wrap rounded-lg border border-zinc-200 bg-white p-6 text-base leading-relaxed text-zinc-800">
+      <div className="whitespace-pre-wrap rounded-lg border border-zinc-200 bg-zinc-100 p-6 text-base leading-relaxed text-zinc-800 paper-surface shadow-soft">
         {segments}
       </div>
     </div>
