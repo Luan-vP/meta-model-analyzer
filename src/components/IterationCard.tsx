@@ -55,7 +55,7 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
             }
             rows={6}
             disabled={isAnalyzing}
-            className="w-full resize-y rounded-lg border border-zinc-300 bg-zinc-100 px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:bg-zinc-50"
+            className="w-full resize-y rounded-lg border border-zinc-300 bg-zinc-100 notebook-lined px-4 py-3 text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400 disabled:bg-zinc-50"
           />
           {error && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">

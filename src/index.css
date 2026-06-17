@@ -29,13 +29,14 @@
 :root {
   --paper-texture-page: url('/textures/paper.png');
   --paper-texture-surface: url('/textures/handmade-paper.png');
-  --shadow-soft: 0 10px 30px rgba(60, 43, 20, 0.08);
+--shadow-soft: 0 10px 30px rgba(60, 43, 20, 0.08);
 }
 
 body {
   margin: 0;
   background-color: #f3efe0;
-  background-image: var(--paper-texture-page);
+  background-image: url('/textures/notebook.png'), var(--paper-texture-page);
+  background-blend-mode: multiply, normal;
   font-family: 'Source Sans 3', 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -60,5 +61,8 @@ h6 {
   }
   .shadow-soft {
     box-shadow: var(--shadow-soft);
+  }
+  .notebook-lined {
+    background-image: url('/textures/notebook.png');
   }
 }

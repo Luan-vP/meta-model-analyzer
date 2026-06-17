@@ -71,7 +71,7 @@ export function AnnotatedText({ result }: AnnotatedTextProps) {
       </div>
 
       {/* Annotated text */}
-      <div className="whitespace-pre-wrap rounded-lg border border-zinc-200 bg-zinc-100 p-6 text-base leading-relaxed text-zinc-800 paper-surface shadow-soft">
+      <div className="whitespace-pre-wrap rounded-lg border border-zinc-200 bg-zinc-100 p-6 text-base leading-relaxed text-zinc-800 notebook-lined shadow-soft">
         {segments}
       </div>
     </div>
