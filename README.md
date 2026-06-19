@@ -1,6 +1,18 @@
-# React + TypeScript + Vite
+# Meta-Model Analyzer
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React + TypeScript + Vite app that detects linguistic patterns from Bandler & Grinder's Meta-Model. It can run analysis fully in-browser with WebLLM (WebGPU) or via the Claude API.
+
+## Deployment
+
+The app is deployed to **GitHub Pages** and served at <https://analyzer.luanvp.info>.
+
+- **Build/deploy:** the `Deploy to GitHub Pages` GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) builds and deploys on push to `main`. The `github-pages` environment's deployment-branch policy must permit `main`.
+- **Custom domain:** `analyzer.luanvp.info` is a CNAME to `luan-vp.github.io.`, managed in Google Cloud DNS (`gcloud dns`, managed zone `luanvp-info`).
+- **HTTPS is required — not optional.** GitHub Pages must have **Enforce HTTPS** enabled for the custom domain (`gh api -X PUT repos/<owner>/<repo>/pages -F https_enforced=true`). The app only works in a [secure context](https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts):
+  - **WebGPU** (`navigator.gpu`), which the local WebLLM provider depends on, is secure-context-only — over plain HTTP it is unavailable and local models cannot load.
+  - **`crypto.randomUUID()`** is secure-context-only. The WebLLM worker-message protocol calls it on every message, so over HTTP it throws `crypto.randomUUID is not a function` (seen in the Settings tab). `localhost` is always a secure context, so this only surfaces on the deployed HTTP origin. We ship a `crypto.getRandomValues`-based polyfill (`src/lib/randomUUIDPolyfill.ts`, imported in both `main.tsx` and the WebLLM worker) as defense-in-depth, but enforcing HTTPS is still required because WebGPU itself needs a secure context.
+
+> Note: `CLAUDE.md` documents an earlier Google Cloud Run deployment. The live deployment is now GitHub Pages (as above); treat `CLAUDE.md`'s Cloud Run section as historical until it is updated.
 
 ## Claude Code skill: NLP Meta-Model distortions
 
