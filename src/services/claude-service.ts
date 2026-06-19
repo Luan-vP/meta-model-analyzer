@@ -3,7 +3,7 @@ import type { LLMService } from '../types/llm'
 import type { Annotation } from '../types/analysis'
 import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage, parseAnnotationsJSON } from './prompt'
 
-const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-4-5'
+const DEFAULT_CLAUDE_MODEL = 'claude-haiku-4-5'
 
 export class ClaudeService implements LLMService {
   readonly providerName = 'Claude'

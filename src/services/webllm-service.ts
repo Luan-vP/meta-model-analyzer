@@ -3,13 +3,13 @@ import type { Annotation } from '../types/analysis'
 import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage, parseAnnotationsJSON } from './prompt'
 
 export const AVAILABLE_WEBLLM_MODELS = [
-  { id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Small (Qwen3 0.6B)', size: '~0.4GB' },
+  { id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Default (Qwen3 0.6B)', size: '~0.4GB' },
   { id: 'Qwen3-1.7B-q4f16_1-MLC', label: 'Qwen3 1.7B', size: '~1.1GB' },
-  { id: 'Qwen3-4B-q4f16_1-MLC', label: 'Default (Qwen3 4B)', size: '~2.5GB' },
+  { id: 'Qwen3-4B-q4f16_1-MLC', label: 'Qwen3 4B', size: '~2.5GB' },
   { id: 'Qwen3-8B-q4f16_1-MLC', label: 'Large (Qwen3 8B)', size: '~5GB' },
 ]
 
-export const DEFAULT_WEBLLM_MODEL_ID = AVAILABLE_WEBLLM_MODELS[2].id
+export const DEFAULT_WEBLLM_MODEL_ID = AVAILABLE_WEBLLM_MODELS[0].id
 
 export class WebLLMService implements LLMService {
   readonly providerName = 'WebLLM (Local)'
