@@ -24,11 +24,12 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
 
-    /* Shared hexagon */
+    /* Shared hexagon + adapters */
     "baseUrl": ".",
     "paths": {
-      "@core": ["./core/index.ts"]
+      "@core": ["./core/index.ts"],
+      "@adapters/*": ["./adapters/*"]
     }
   },
-  "include": ["src", "core"]
+  "include": ["src", "core", "adapters"]
 }

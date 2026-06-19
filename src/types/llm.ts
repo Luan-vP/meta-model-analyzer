@@ -1,5 +1,5 @@
-// The LLMService provider port now lives in the shared hexagon (`@core`).
+// The provider port + request type live in the shared hexagon (`@core`).
 // ProviderType stays desktop-local: it enumerates the adapters this app offers.
-export type { LLMService } from '@core'
+export type { LlmProvider, CompletionRequest } from '@core'
 
-export type ProviderType = 'claude' | 'webllm'
+export type ProviderType = 'claude' | 'webllm' | 'ollama'

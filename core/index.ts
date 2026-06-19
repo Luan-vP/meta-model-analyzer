@@ -17,6 +17,10 @@ export {
   resolveOffsets,
   parseAnnotationsJSON,
 } from './application/prompt'
+export type { RawAnnotation } from './application/prompt'
 
-// Ports
-export type { LLMService } from './application/ports/llm-provider'
+// Application use case (inbound / driving port)
+export { analyzeText, validateAnnotations } from './application/analyze-text'
+
+// Outbound (driven) provider port
+export type { LlmProvider, CompletionRequest } from './application/ports/llm-provider'

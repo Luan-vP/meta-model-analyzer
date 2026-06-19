@@ -19,6 +19,10 @@ interface SettingsPanelProps {
   webllmModel: string
   onWebllmModelChange: (id: string) => void
   webllmModels: WebLLMModelOption[]
+  ollamaUrl: string
+  onOllamaUrlChange: (url: string) => void
+  ollamaModel: string
+  onOllamaModelChange: (model: string) => void
   onProbeHardware: () => void
   probing: boolean
   probeResult: ProbeResult | null
@@ -37,6 +41,10 @@ export function SettingsPanel({
   webllmModel,
   onWebllmModelChange,
   webllmModels,
+  ollamaUrl,
+  onOllamaUrlChange,
+  ollamaModel,
+  onOllamaModelChange,
   onProbeHardware,
   probing,
   probeResult,
@@ -54,6 +62,14 @@ export function SettingsPanel({
             }`}
           >
             Local (WebLLM)
+          </button>
+          <button
+            onClick={() => onProviderChange('ollama')}
+            className={`rounded px-3 py-1 text-sm font-medium transition-colors ${
+              provider === 'ollama' ? 'bg-zinc-50 text-zinc-900 shadow-sm' : 'text-zinc-600 hover:text-zinc-900'
+            }`}
+          >
+            Local (Ollama)
           </button>
           <button
             onClick={() => onProviderChange('claude')}
@@ -86,6 +102,40 @@ export function SettingsPanel({
             className="flex-1 rounded border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
           />
           <span className="text-xs text-zinc-400">Stored locally only</span>
+        </div>
+      )}
+
+      {provider === 'ollama' && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <label htmlFor="ollama-url" className="w-12 text-sm text-zinc-600">
+              URL
+            </label>
+            <input
+              id="ollama-url"
+              type="text"
+              value={ollamaUrl}
+              onChange={(e) => onOllamaUrlChange(e.target.value)}
+              placeholder="http://localhost:11434"
+              className="flex-1 rounded border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="ollama-model" className="w-12 text-sm text-zinc-600">
+              Model
+            </label>
+            <input
+              id="ollama-model"
+              type="text"
+              value={ollamaModel}
+              onChange={(e) => onOllamaModelChange(e.target.value)}
+              placeholder="llama3.1:8b"
+              className="flex-1 rounded border border-zinc-300 bg-zinc-100 px-3 py-1.5 text-sm text-zinc-900 placeholder:text-zinc-400 focus:border-indigo-400 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+            />
+          </div>
+          <p className="text-xs text-zinc-500">
+            Requires a local Ollama server. If requests are blocked (403), set <code>OLLAMA_ORIGINS</code> to allow this app's origin.
+          </p>
         </div>
       )}
 

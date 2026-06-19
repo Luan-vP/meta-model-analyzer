@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react'
+import { DEFAULT_OLLAMA_URL, DEFAULT_OLLAMA_MODEL } from '@adapters/providers/ollama'
 import type { ProviderType } from '../types/llm'
 import { pickDefaultWebLLMModel, type ProbeResult } from '../services/device-probe'
 
@@ -6,6 +7,8 @@ const STORAGE_KEYS = {
   apiKey: 'mma-claude-api-key',
   provider: 'mma-provider',
   webllmModel: 'mma-webllm-model',
+  ollamaUrl: 'mma-ollama-url',
+  ollamaModel: 'mma-ollama-model',
 } as const
 
 export function useSettings() {
@@ -15,6 +18,12 @@ export function useSettings() {
   )
   const [webllmModel, setWebllmModelState] = useState<string>(
     () => localStorage.getItem(STORAGE_KEYS.webllmModel) ?? '',
+  )
+  const [ollamaUrl, setOllamaUrlState] = useState<string>(
+    () => localStorage.getItem(STORAGE_KEYS.ollamaUrl) ?? DEFAULT_OLLAMA_URL,
+  )
+  const [ollamaModel, setOllamaModelState] = useState<string>(
+    () => localStorage.getItem(STORAGE_KEYS.ollamaModel) ?? DEFAULT_OLLAMA_MODEL,
   )
   const [probing, setProbing] = useState(false)
   const [probeResult, setProbeResult] = useState<ProbeResult | null>(null)
@@ -38,6 +47,16 @@ export function useSettings() {
     setWebllmModelState(id)
   }, [])
 
+  const setOllamaUrl = useCallback((url: string) => {
+    localStorage.setItem(STORAGE_KEYS.ollamaUrl, url)
+    setOllamaUrlState(url)
+  }, [])
+
+  const setOllamaModel = useCallback((model: string) => {
+    localStorage.setItem(STORAGE_KEYS.ollamaModel, model)
+    setOllamaModelState(model)
+  }, [])
+
   const probeWebllmModel = useCallback(async () => {
     setProbing(true)
     try {
@@ -58,6 +77,10 @@ export function useSettings() {
     setProvider,
     webllmModel,
     setWebllmModel,
+    ollamaUrl,
+    setOllamaUrl,
+    ollamaModel,
+    setOllamaModel,
     probeWebllmModel,
     probing,
     probeResult,

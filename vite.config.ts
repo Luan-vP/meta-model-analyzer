@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@core': fileURLToPath(new URL('./core/index.ts', import.meta.url)),
+      '@adapters': fileURLToPath(new URL('./adapters', import.meta.url)),
     },
   },
   worker: {

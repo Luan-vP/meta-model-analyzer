@@ -123,7 +123,7 @@ const TYPE_TO_CATEGORY: Record<ViolationType, ViolationCategory> = {
   'presupposition': 'distortion',
 }
 
-interface RawAnnotation {
+export interface RawAnnotation {
   text: string
   violationType: ViolationType
   category: ViolationCategory

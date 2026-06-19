@@ -1,6 +1,4 @@
-import type { LLMService } from '../types/llm'
-import type { Annotation } from '../types/analysis'
-import { SYSTEM_PROMPT, ANNOTATION_JSON_SCHEMA, resolveOffsets, buildUserMessage, parseAnnotationsJSON } from './prompt'
+import type { LlmProvider, CompletionRequest } from '@core'
 
 export const AVAILABLE_WEBLLM_MODELS = [
   { id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Default (Qwen3 0.6B)', size: '~0.4GB' },
@@ -11,7 +9,12 @@ export const AVAILABLE_WEBLLM_MODELS = [
 
 export const DEFAULT_WEBLLM_MODEL_ID = AVAILABLE_WEBLLM_MODELS[0].id
 
-export class WebLLMService implements LLMService {
+/**
+ * Driven adapter: in-browser inference via WebLLM (WebGPU). Desktop-only —
+ * needs a secure context and a web worker, so it is not shared with the
+ * extension/Obsidian adapters.
+ */
+export class WebLLMService implements LlmProvider {
   readonly providerName = 'WebLLM (Local)'
   private engine: import('@mlc-ai/web-llm').MLCEngineInterface | null = null
   private worker: Worker | null = null
@@ -43,22 +46,22 @@ export class WebLLMService implements LLMService {
     this.ready = true
   }
 
-  async analyze(text: string): Promise<Annotation[]> {
+  async complete(request: CompletionRequest): Promise<string> {
     if (!this.engine) {
       throw new Error('WebLLM engine not initialized. Call initialize() first.')
     }
 
     const response = await this.engine.chat.completions.create({
       messages: [
-        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'system', content: request.system },
         // /no_think disables Qwen3's reasoning block so it streams JSON directly.
-        { role: 'user', content: buildUserMessage(text) + ' /no_think' },
+        { role: 'user', content: `${request.user} /no_think` },
       ],
       temperature: 0.1,
       max_tokens: 2048,
       response_format: {
         type: 'json_object',
-        schema: JSON.stringify(ANNOTATION_JSON_SCHEMA),
+        schema: JSON.stringify(request.schema),
       } as { type: 'json_object' },
     })
 
@@ -66,19 +69,7 @@ export class WebLLMService implements LLMService {
     if (!content) {
       throw new Error('No response from WebLLM')
     }
-
-    const parsed = parseAnnotationsJSON(content) as { annotations?: unknown }
-    const rawAnnotations = parsed.annotations ?? parsed
-
-    const validated = (Array.isArray(rawAnnotations) ? rawAnnotations : []).filter(
-      (a: Record<string, unknown>) =>
-        typeof a.text === 'string' &&
-        typeof a.violationType === 'string' &&
-        typeof a.category === 'string' &&
-        typeof a.challengeQuestion === 'string',
-    )
-
-    return resolveOffsets(text, validated)
+    return content
   }
 
   dispose(): void {

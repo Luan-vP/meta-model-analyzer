@@ -18,9 +18,11 @@ export default function App() {
     apiKey, setApiKey,
     provider, setProvider,
     webllmModel, setWebllmModel,
+    ollamaUrl, setOllamaUrl,
+    ollamaModel, setOllamaModel,
     probeWebllmModel, probing, probeResult,
   } = useSettings()
-  const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, apiKey, webllmModel)
+  const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, apiKey, webllmModel, ollamaUrl, ollamaModel)
   const { iterations, analyze, setText } = useIterations(service)
 
   const visible = iterations.slice(-VISIBLE_COUNT)
@@ -57,6 +59,10 @@ export default function App() {
           webllmModel={webllmModel}
           onWebllmModelChange={setWebllmModel}
           webllmModels={AVAILABLE_WEBLLM_MODELS}
+          ollamaUrl={ollamaUrl}
+          onOllamaUrlChange={setOllamaUrl}
+          ollamaModel={ollamaModel}
+          onOllamaModelChange={setOllamaModel}
           onProbeHardware={probeWebllmModel}
           probing={probing}
           probeResult={probeResult}
