@@ -100,9 +100,9 @@ export default function App() {
       {/* pb-12 leaves room for the mobile bottom tab bar */}
       <div className="relative mx-auto min-h-screen max-w-3xl px-4 py-8 pb-12 sm:pb-8">
         <header className="mb-8">
-          <h1 className="text-2xl font-bold text-zinc-900">Meta-Model Analyzer</h1>
+          <h1 className="text-2xl font-bold text-zinc-900">Iterative Journal</h1>
           <p className="mt-1 text-sm text-zinc-500">
-            Detect linguistic patterns from Bandler &amp; Grinder's Meta-Model. Hover underlined text for challenge questions.
+            Find gaps in your thinking, and iterate on your thoughts.
           </p>
         </header>
 
