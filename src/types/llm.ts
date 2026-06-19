@@ -1,11 +1,5 @@
-import type { Annotation } from './analysis'
+// The LLMService provider port now lives in the shared hexagon (`@core`).
+// ProviderType stays desktop-local: it enumerates the adapters this app offers.
+export type { LLMService } from '@core'
 
 export type ProviderType = 'claude' | 'webllm'
-
-export interface LLMService {
-  readonly providerName: string
-  isReady(): boolean
-  initialize(onProgress?: (progress: number, status: string) => void): Promise<void>
-  analyze(text: string): Promise<Annotation[]>
-  dispose(): void
-}
