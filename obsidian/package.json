@@ -1,0 +1,17 @@
+{
+  "name": "meta-model-analyzer-obsidian",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Obsidian plugin: Meta-Model analysis in your vault, default local Ollama.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.12.0",
+    "esbuild": "^0.25.0",
+    "obsidian": "^1.7.2",
+    "typescript": "~5.9.3"
+  }
+}

@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 .playwright-mcp
 benchmark-results-*.json
+
+# Obsidian plugin build output (built from obsidian/src via esbuild)
+obsidian/main.js
+obsidian/main.js.map

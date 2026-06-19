@@ -1,0 +1,9 @@
+{
+  "id": "meta-model-analyzer",
+  "name": "Meta-Model Analyzer",
+  "version": "1.0.0",
+  "minAppVersion": "1.4.0",
+  "description": "Detect Bandler & Grinder Meta-Model violations in your notes, using a local Ollama model (default) or Claude.",
+  "author": "Luan van Pletsen",
+  "isDesktopOnly": true
+}

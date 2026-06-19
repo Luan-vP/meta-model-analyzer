@@ -1,0 +1,54 @@
+.mma-view {
+  padding: 0 0.5rem;
+}
+
+.mma-view .mma-muted {
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.mma-view .mma-summary {
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  color: var(--text-normal);
+}
+
+.mma-view .mma-error {
+  border: 1px solid var(--background-modifier-error);
+  background: var(--background-modifier-error-hover);
+  color: var(--text-error);
+  border-radius: 6px;
+  padding: 0.6rem 0.75rem;
+  font-size: var(--font-ui-small);
+  white-space: pre-wrap;
+}
+
+.mma-view .mma-text {
+  white-space: pre-wrap;
+  line-height: 1.7;
+  font-size: var(--font-text-size);
+}
+
+.mma-violation {
+  cursor: help;
+  border-radius: 2px;
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.mma-violation.mma-deletion {
+  text-decoration-color: #e05252;
+}
+.mma-violation.mma-generalization {
+  text-decoration-color: #0d9488;
+}
+.mma-violation.mma-distortion {
+  text-decoration-color: #6366f1;
+}
+
+.mma-settings-note {
+  color: var(--text-muted);
+  font-size: var(--font-ui-smaller);
+}
