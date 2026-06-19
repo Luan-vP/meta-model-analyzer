@@ -61,37 +61,39 @@ output. Can be promoted to npm workspaces later without moving files.
   **new** `adapters/providers/ollama.ts`; WebLLM refactored to the narrow port;
   desktop gained a "Local (Ollama)" provider with URL/model settings. Verified
   end-to-end against a real local Ollama server.
+- **Phase 3 — extension onto `core/` ✅** Brought the MV3 extension over from the
+  pre-hexagon `fix/extension-mv3-build` lineage. Deleted its duplicated
+  `prompt.ts`/`ollama-service.ts`; `types.ts` slimmed to extension message shapes
+  + `@core` re-exports; `background.ts` calls `analyzeText(new OllamaProvider(...))`.
+  Build switched from per-file `tsc` to **esbuild** (background/popup ESM, content
+  IIFE) with `@core`/`@adapters` aliases inlining the hexagon. Verified by build +
+  bundle inspection (not live-loaded in a browser here).
+- **Phase 4 — Obsidian plugin ✅** New `obsidian/` driving adapter: esbuild CJS
+  bundle that externalizes `obsidian` + node builtins and inlines `@core` +
+  `@adapters/providers/{ollama,claude}`. Command "Analyze selection / current
+  note", right-sidebar `ItemView` with challenge-question tooltips, settings
+  (default **Ollama**, URL/model, optional Claude key), `OLLAMA_ORIGINS`
+  guidance for the `app://obsidian.md` origin. No WebLLM (WebGPU is unreliable in
+  Obsidian's Electron). Verified by build + `tsc --noEmit` (not live-tested in
+  Obsidian — no runtime available here).
 
-## Remaining work
+## Per-surface builds
 
-### Phase 3 — refactor the extension onto `core/`
+| Surface | Location | Bundler | Output |
+| --- | --- | --- | --- |
+| Desktop | `src/` + root | Vite (`npm run build`) | `dist/` (GitHub Pages) |
+| Extension | `extension/` | esbuild (`npm run build` in `extension/`) | `extension/dist/` (load unpacked) |
+| Obsidian | `obsidian/` | esbuild (`npm run build` in `obsidian/`) | `obsidian/main.js` (copy into a vault's plugins dir) |
 
-The extension (`extension/`) currently has its **own** drifted copies of the
-prompt, schema, types, and an `OllamaService` that predates the shared core.
+All three consume the same `core/` + `adapters/providers/*` via the `@core` /
+`@adapters` aliases.
 
-- Delete `extension/src/prompt.ts` and `extension/src/types.ts`; import from
-  `@core` instead (the extension inherits the richer canonical prompt).
-- Replace `extension/src/ollama-service.ts` with the shared
-  `OllamaProvider` from `@adapters/providers/ollama` + the `analyzeText` use case.
-- `extension/src/background.ts` `handleAnalyze(text, model, url)` becomes:
-  `analyzeText(new OllamaProvider(url, model), text)`.
-- **Build:** confirm/define the extension's bundler (esbuild) and give it `@core`
-  / `@adapters` alias resolution so it inlines `core/` + `adapters/`.
-- Result: one source of truth; identical analysis behaviour to the desktop.
+## Remaining / future cleanup
 
-### Phase 4 — Obsidian plugin (`obsidian/`, a driving adapter)
-
-A subfolder plugin that analyzes text inside a vault, **defaulting to Ollama**.
-
-- `obsidian/manifest.json` + esbuild bundle (`main.ts`); reuses `@core` +
-  `@adapters/providers/{ollama,claude}`. No WebLLM (WebGPU is unreliable in
-  Obsidian's Electron; Ollama is the natural local default).
-- Settings tab: provider (default **Ollama**), base URL (`http://localhost:11434`),
-  model; optional Claude API key.
-- A command **"Analyze selection / current note"** that runs `analyzeText` and a
-  right-sidebar view rendering the annotated text + challenge-question tooltips.
-- **Caveat:** Obsidian requests originate from the `app://obsidian.md` origin, so
-  Ollama needs `OLLAMA_ORIGINS` set (same 403 guidance the desktop/extension surface).
+- **Live-test** the extension (load unpacked in Chrome) and the Obsidian plugin
+  (copy `obsidian/` into a vault) — neither could be run in the build environment.
+- Migrate the Phase 1 desktop shims' import sites to `@core` and delete the shims.
+- Optionally promote `core/` + `adapters/` to npm workspaces.
 
 ## Notes
 
