@@ -28,3 +28,6 @@ benchmark-results-*.json
 # Obsidian plugin build output (built from obsidian/src via esbuild)
 obsidian/main.js
 obsidian/main.js.map
+
+# Per-machine conductr schedule registry (self-declared local-only)
+.conductr-local

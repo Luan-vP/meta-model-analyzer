@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Meta-Model Analysis</title>
+<style>
+  :root {
+    --del: #E05252; --del-bg: #FEE2E2; --del-fg: #991B1B;
+    --gen: #0D9488; --gen-bg: #CCFBF1; --gen-fg: #115E59;
+    --dis: #6366F1; --dis-bg: #E0E7FF; --dis-fg: #3730A3;
+    --zinc-200: #e4e4e7; --zinc-500: #71717a; --zinc-600: #52525b; --zinc-800: #27272a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 2.5rem 1.5rem;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--zinc-800); background: #fafafa; line-height: 1.7;
+  }
+  .wrap { max-width: 52rem; margin: 0 auto; }
+  h1 { font-size: 1.35rem; font-weight: 650; margin: 0 0 .25rem; }
+  .sub { color: var(--zinc-500); font-size: .9rem; margin: 0 0 1.5rem; }
+
+  .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin-bottom: 1rem; }
+  .legend .summary { font-size: .9rem; font-weight: 550; color: var(--zinc-600); }
+  .legend .item { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--zinc-600); text-transform: capitalize; }
+  .dot { width: .65rem; height: .65rem; border-radius: 999px; display: inline-block; }
+  .dot-deletion { background: var(--del); }
+  .dot-generalization { background: var(--gen); }
+  .dot-distortion { background: var(--dis); }
+
+  .card {
+    white-space: pre-wrap; background: #fff; border: 1px solid var(--zinc-200);
+    border-radius: .6rem; padding: 1.5rem; font-size: 1.05rem;
+  }
+  .empty { color: var(--zinc-500); }
+
+  /* Violation spans */
+  .v {
+    position: relative; cursor: help; border-radius: 2px;
+    text-decoration-line: underline; text-decoration-style: wavy;
+    text-decoration-thickness: 2px; text-underline-offset: 3px;
+    transition: background-color .12s ease;
+  }
+  .v:hover, .v:focus { outline: none; }
+  .v.deletion { text-decoration-color: var(--del); }
+  .v.generalization { text-decoration-color: var(--gen); }
+  .v.distortion { text-decoration-color: var(--dis); }
+  .v.deletion:hover, .v.deletion:focus { background: var(--del-bg); }
+  .v.generalization:hover, .v.generalization:focus { background: var(--gen-bg); }
+  .v.distortion:hover, .v.distortion:focus { background: var(--dis-bg); }
+
+  /* Tooltip (pure CSS) */
+  .tip {
+    position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+    margin-bottom: .55rem; width: 18rem; z-index: 50;
+    background: #fff; border: 1px solid var(--zinc-200); border-radius: .55rem;
+    padding: .7rem .8rem; box-shadow: 0 10px 25px -5px rgba(0,0,0,.18);
+    white-space: normal; line-height: 1.45; text-align: left;
+    visibility: hidden; opacity: 0; transition: opacity .12s ease;
+    text-decoration: none;
+  }
+  .v:hover .tip, .v:focus .tip { visibility: visible; opacity: 1; }
+  .tip::after {
+    content: ""; position: absolute; top: 100%; left: 50%;
+    width: .7rem; height: .7rem; transform: translate(-50%, -50%) rotate(45deg);
+    background: #fff; border-right: 1px solid var(--zinc-200); border-bottom: 1px solid var(--zinc-200);
+  }
+  .tip .head { display: flex; align-items: center; gap: .5rem; margin-bottom: .35rem; }
+  .badge { border-radius: .25rem; padding: .1rem .4rem; font-size: .7rem; font-weight: 650; text-transform: capitalize; }
+  .badge-deletion { background: var(--del-bg); color: var(--del-fg); }
+  .badge-generalization { background: var(--gen-bg); color: var(--gen-fg); }
+  .badge-distortion { background: var(--dis-bg); color: var(--dis-fg); }
+  .tip .name { font-size: .85rem; font-weight: 550; color: var(--zinc-800); }
+  .tip .q { display: block; font-size: .85rem; font-style: italic; color: var(--zinc-600); margin: 0; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Meta-Model Analysis</h1>
+    <p class="sub">NLP Meta-Model analysis — hover or tab to a highlighted phrase for its challenge question.</p>
+    <div class="legend">
+      <span class="summary">3 violations found</span>
+      <div style="display:flex;gap:.85rem;flex-wrap:wrap;"><span class="item"><span class="dot dot-generalization"></span>generalization (2)</span><span class="item"><span class="dot dot-distortion"></span>distortion (1)</span></div>
+    </div>
+    <div class="card"><span class="v generalization" tabindex="0">Everyone knows<span class="tip"><span class="head"><span class="badge badge-generalization">generalization</span><span class="name">Universal Quantifier</span></span><span class="q">"Everyone? Is there anyone who doesn&#x27;t know this?"</span></span></span> <span class="v generalization" tabindex="0">I can&#x27;t do anything right<span class="tip"><span class="head"><span class="badge badge-generalization">generalization</span><span class="name">Modal Operator of Possibility</span></span><span class="q">"What prevents you? Has there ever been something you did right?"</span></span></span> and <span class="v distortion" tabindex="0">she makes me angry<span class="tip"><span class="head"><span class="badge badge-distortion">distortion</span><span class="name">Cause-Effect</span></span><span class="q">"How specifically does she cause you to feel angry?"</span></span></span>.</div>
+  </div>
+</body>
+</html>
