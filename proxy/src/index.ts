@@ -13,6 +13,7 @@ const DEFAULT_DAILY_CAP_USD = 10.0
 
 const DEFAULT_ALLOWED_ORIGINS = [
   'https://meta-model-analyzer-6frhukghgq-uc.a.run.app',
+  'https://analyzer.luanvp.info',
   'http://localhost:5173',
   'http://localhost:4173',
 ]

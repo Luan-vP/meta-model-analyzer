@@ -134,7 +134,10 @@ export function SettingsPanel({
             />
           </div>
           <p className="text-xs text-zinc-500">
-            Requires a local Ollama server. If requests are blocked (403), set <code>OLLAMA_ORIGINS</code> to allow this app's origin.
+            Requires a local Ollama server. Browsers block requests from this site unless Ollama
+            allows its origin: start Ollama with{' '}
+            <code>OLLAMA_ORIGINS="{typeof window !== 'undefined' ? window.location.origin : ''}"</code>{' '}
+            (or <code>"*"</code>) and restart it.
           </p>
         </div>
       )}

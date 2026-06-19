@@ -3,6 +3,13 @@ import type { LlmProvider, CompletionRequest } from '@core'
 export const DEFAULT_OLLAMA_URL = 'http://localhost:11434'
 export const DEFAULT_OLLAMA_MODEL = 'llama3.1:8b'
 
+// Matches Ollama's own default context window. The system prompt is ~1.4k
+// tokens, leaving room for a typical selection plus the JSON result. Kept small
+// on purpose: a larger window inflates the KV cache and, on memory-tight setups
+// (big models + a browser sharing the GPU), can push Metal into an OOM that
+// returns empty responses. Bump it only if you analyse long documents.
+export const DEFAULT_OLLAMA_NUM_CTX = 4096
+
 /**
  * Driven adapter: a local Ollama server via its /api/chat endpoint.
  * Pure fetch — portable across desktop, extension, and Obsidian (Electron).
@@ -40,12 +47,19 @@ export class OllamaProvider implements LlmProvider {
           think: false,
           stream: false,
           format: 'json',
-          options: { temperature: 0.1, num_ctx: 8192 },
+          options: { temperature: 0.1, num_ctx: DEFAULT_OLLAMA_NUM_CTX },
         }),
       })
     } catch (e) {
+      // A CORS-blocked preflight and a dead server both reject fetch() with a
+      // TypeError, so we can't tell them apart here. From a hosted origin the
+      // common cause is Ollama's CORS allow-list, so point at OLLAMA_ORIGINS.
+      const origin = (globalThis as { location?: { origin?: string } }).location?.origin
+      const originHint = origin ? `"${origin}"` : "this app's origin"
       throw new Error(
-        `Could not reach Ollama at ${this.baseUrl}. Is it running? (${e instanceof Error ? e.message : String(e)})`,
+        `Couldn't reach Ollama at ${this.baseUrl}. Either it isn't running, or it's blocking ` +
+          `this origin (CORS). If it's running, start Ollama with OLLAMA_ORIGINS=${originHint} ` +
+          `(or "*") and restart it. (${e instanceof Error ? e.message : String(e)})`,
       )
     }
 
