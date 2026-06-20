@@ -41,8 +41,8 @@ describe('computeCostUsd', () => {
   })
 
   it('handles output-only tokens', () => {
-    // 0 input + 1k output for sonnet-4-6 = 1000 * 15 / 1_000_000 = $0.000015
-    expect(computeCostUsd('claude-sonnet-4-6', 0, 1_000)).toBeCloseTo(0.000015)
+    // 0 input + 1k output for sonnet-4-6 = 1000 * 15 / 1_000_000 = $0.015
+    expect(computeCostUsd('claude-sonnet-4-6', 0, 1_000)).toBeCloseTo((1_000 * 15) / 1_000_000)
   })
 
   it('handles fractional token counts', () => {
