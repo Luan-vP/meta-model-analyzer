@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   webllmModel: 'mma-webllm-model',
   ollamaUrl: 'mma-ollama-url',
   ollamaModel: 'mma-ollama-model',
+  maxRetries: 'mma-max-retries',
 } as const
 
 export function useSettings() {
@@ -25,6 +26,16 @@ export function useSettings() {
   const [ollamaModel, setOllamaModelState] = useState<string>(
     () => localStorage.getItem(STORAGE_KEYS.ollamaModel) ?? DEFAULT_OLLAMA_MODEL,
   )
+  const [maxRetries, setMaxRetriesState] = useState<number>(() => {
+    const raw = Number(localStorage.getItem(STORAGE_KEYS.maxRetries))
+    return Number.isFinite(raw) && raw >= 0 && raw <= 5 ? raw : 3
+  })
+  const setMaxRetries = useCallback((n: number) => {
+    const clamped = Math.max(0, Math.min(5, Math.round(n)))
+    localStorage.setItem(STORAGE_KEYS.maxRetries, String(clamped))
+    setMaxRetriesState(clamped)
+  }, [])
+
   const [probing, setProbing] = useState(false)
   const [probeResult, setProbeResult] = useState<ProbeResult | null>(null)
 
@@ -81,6 +92,8 @@ export function useSettings() {
     setOllamaUrl,
     ollamaModel,
     setOllamaModel,
+    maxRetries,
+    setMaxRetries,
     probeWebllmModel,
     probing,
     probeResult,

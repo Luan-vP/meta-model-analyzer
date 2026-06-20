@@ -20,10 +20,11 @@ export default function App() {
     webllmModel, setWebllmModel,
     ollamaUrl, setOllamaUrl,
     ollamaModel, setOllamaModel,
+    maxRetries, setMaxRetries,
     probeWebllmModel, probing, probeResult,
   } = useSettings()
   const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, apiKey, webllmModel, ollamaUrl, ollamaModel)
-  const { iterations, analyze, setText } = useIterations(service)
+  const { iterations, analyze, setText } = useIterations(service, maxRetries)
 
   const visible = iterations.slice(-VISIBLE_COUNT)
 
@@ -67,6 +68,8 @@ export default function App() {
           probing={probing}
           probeResult={probeResult}
           onCancelLoading={handleCancelLoading}
+          maxRetries={maxRetries}
+          onMaxRetriesChange={setMaxRetries}
         />
       ),
     },

@@ -27,6 +27,8 @@ interface SettingsPanelProps {
   probing: boolean
   probeResult: ProbeResult | null
   onCancelLoading: () => void
+  maxRetries: number
+  onMaxRetriesChange: (n: number) => void
 }
 
 export function SettingsPanel({
@@ -49,6 +51,8 @@ export function SettingsPanel({
   probing,
   probeResult,
   onCancelLoading,
+  maxRetries,
+  onMaxRetriesChange,
 }: SettingsPanelProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -86,6 +90,23 @@ export function SettingsPanel({
             Ready
           </span>
         )}
+      </div>
+
+      <div className="flex items-center gap-3">
+        <label htmlFor="max-retries" className="text-sm font-medium text-zinc-700">
+          Retries on no violations
+        </label>
+        <input
+          id="max-retries"
+          type="range"
+          min={0}
+          max={5}
+          step={1}
+          value={maxRetries}
+          onChange={(e) => onMaxRetriesChange(Number(e.target.value))}
+          className="h-1.5 w-40 cursor-pointer accent-indigo-600"
+        />
+        <span className="w-4 text-sm tabular-nums text-zinc-600">{maxRetries}</span>
       </div>
 
       {provider === 'claude' && (
