@@ -2,6 +2,14 @@
 
 A React + TypeScript + Vite app that detects linguistic patterns from Bandler & Grinder's Meta-Model. It can run analysis fully in-browser with WebLLM (WebGPU) or via the Claude API.
 
+## Credits
+
+The social preview image (`public/og-image.jpg`) incorporates the illustration
+["Ink and Quill"](https://commons.wikimedia.org/wiki/File:Ink_and_Quill.png) by
+Latte1703 via Wikimedia Commons, licensed under
+[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). As a derivative
+work, the composed `og-image.jpg` is likewise made available under CC BY-SA 4.0.
+
 ## Deployment
 
 The app is deployed to **GitHub Pages** and served at <https://analyzer.luanvp.info>.
