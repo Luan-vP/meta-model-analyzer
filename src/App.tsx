@@ -8,6 +8,7 @@ import { IterationCard } from './components/IterationCard'
 import { ResearchQuestionsContent } from './components/ResearchQuestions'
 import { TarotContent } from './components/TarotDraw'
 import { D20Content } from './components/D20'
+import { TimerContent } from './components/Timer'
 import { DockSystem, type DockItemConfig } from './components/DockSystem'
 import { AVAILABLE_WEBLLM_MODELS } from './services/webllm-service'
 
@@ -90,6 +91,13 @@ export default function App() {
       desktopDock: 'right',
       mobileOrder: 3,
       content: <D20Content />,
+    },
+    {
+      id: 'timer',
+      label: 'Timer',
+      desktopDock: 'right',
+      mobileOrder: 4,
+      content: <TimerContent />,
     },
   ]
 

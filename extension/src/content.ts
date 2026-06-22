@@ -193,7 +193,7 @@ class OverlayPanel {
     }
 
     const categoryColors: Record<string, { underline: string; badgeBg: string; badgeText: string }> = {
-      deletion: { underline: '#E05252', badgeBg: '#FEE2E2', badgeText: '#991B1B' },
+      deletion: { underline: '#C026D3', badgeBg: '#FAE8FF', badgeText: '#86198F' },
       generalization: { underline: '#0D9488', badgeBg: '#CCFBF1', badgeText: '#115E59' },
       distortion: { underline: '#6366F1', badgeBg: '#E0E7FF', badgeText: '#3730A3' },
     }
@@ -216,12 +216,12 @@ class OverlayPanel {
             <span style="display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: ${colors.badgeBg}; color: ${colors.badgeText}; text-transform: uppercase;">
               ${a.category}
             </span>
-            <span style="font-size: 11px; color: #a1a1aa; text-transform: capitalize;">${a.violationType.replace(/-/g, ' ')}</span>
+            <span style="font-size: 11px; color: #71717a; text-transform: capitalize;">${a.violationType.replace(/-/g, ' ')}</span>
           </div>
           <p style="font-size: 13px; font-weight: 500; color: #18181b; margin: 4px 0; text-decoration: underline; text-decoration-color: ${colors.underline}; text-decoration-style: wavy; text-decoration-thickness: 2px; text-underline-offset: 3px;">
             "${escapeHtml(a.text)}"
           </p>
-          <p style="font-size: 12px; font-style: italic; color: #71717a; margin: 4px 0 0;">
+          <p style="font-size: 12px; color: #27272a; margin: 4px 0 0;">
             "${escapeHtml(a.challengeQuestion)}"
           </p>
         </div>`
@@ -234,13 +234,8 @@ class OverlayPanel {
         <button class="mma-panel-close">✕</button>
       </div>
       <div style="padding: 12px 16px; border-bottom: 1px solid #f4f4f5;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span style="font-size: 12px; font-weight: 600; color: #3f3f46;">
-            ${annotations.length} violation${annotations.length !== 1 ? 's' : ''} found
-          </span>
-          <div style="display: flex; gap: 10px;">
-            ${legendHtml}
-          </div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+          ${legendHtml}
         </div>
       </div>
       <div style="padding: 12px 16px; max-height: 400px; overflow-y: auto;">

@@ -9,7 +9,7 @@ export interface ViolationInfo {
 }
 
 export const CATEGORY_COLORS: Record<ViolationCategory, { underline: string; badgeBg: string; badgeText: string }> = {
-  deletion: { underline: '#E05252', badgeBg: '#FEE2E2', badgeText: '#991B1B' },
+  deletion: { underline: '#C026D3', badgeBg: '#FAE8FF', badgeText: '#86198F' },
   generalization: { underline: '#0D9488', badgeBg: '#CCFBF1', badgeText: '#115E59' },
   distortion: { underline: '#6366F1', badgeBg: '#E0E7FF', badgeText: '#3730A3' },
 }

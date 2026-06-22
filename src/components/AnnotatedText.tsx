@@ -49,9 +49,6 @@ export function AnnotatedText({ result }: AnnotatedTextProps) {
     <div className="flex flex-col gap-4">
       {/* Legend */}
       <div className="flex flex-wrap items-center gap-4">
-        <span className="text-sm font-medium text-zinc-600">
-          {annotations.length} violation{annotations.length !== 1 ? 's' : ''} found
-        </span>
         <div className="flex gap-3">
           {(Object.entries(counts) as [ViolationCategory, number][]).map(([category, count]) => {
             const colors = CATEGORY_COLORS[category]
