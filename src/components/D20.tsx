@@ -52,11 +52,11 @@ export function D20Content() {
     // Quick flicker before landing
     let ticks = 0
     const interval = setInterval(() => {
-      setRoll(Math.ceil(Math.random() * 20))
+      setRoll(Math.floor(Math.random() * 20) + 1)
       ticks++
       if (ticks >= 8) {
         clearInterval(interval)
-        const final = Math.ceil(Math.random() * 20)
+        const final = Math.floor(Math.random() * 20) + 1
         setRoll(final)
         setRollKey(k => k + 1)
         setHistory(h => [final, ...h].slice(0, 5))

@@ -4,7 +4,7 @@ export const AVAILABLE_WEBLLM_MODELS = [
   { id: 'Qwen3-0.6B-q4f16_1-MLC', label: 'Default (Qwen3 0.6B)', size: '~0.4GB' },
   { id: 'Qwen3-1.7B-q4f16_1-MLC', label: 'Qwen3 1.7B', size: '~1.1GB' },
   { id: 'Qwen3-4B-q4f16_1-MLC', label: 'Qwen3 4B', size: '~2.5GB' },
-  { id: 'Qwen3-8B-q4f16_1-MLC', label: 'Large (Qwen3 8B)', size: '~5GB' },
+  { id: 'Llama-3.1-8B-Instruct-q4f16_1-MLC', label: 'Large (Llama 3.1 8B)', size: '~5GB' },
 ]
 
 export const DEFAULT_WEBLLM_MODEL_ID = AVAILABLE_WEBLLM_MODELS[0].id
@@ -51,11 +51,16 @@ export class WebLLMService implements LlmProvider {
       throw new Error('WebLLM engine not initialized. Call initialize() first.')
     }
 
+    // /no_think disables Qwen3's reasoning block so it streams JSON directly.
+    // It's a Qwen-only control token, so only append it for Qwen3 models —
+    // other models (e.g. Llama 3.1) would treat it as literal prompt text.
+    const isQwen3 = this.modelId.startsWith('Qwen3-')
+    const userContent = isQwen3 ? `${request.user} /no_think` : request.user
+
     const response = await this.engine.chat.completions.create({
       messages: [
         { role: 'system', content: request.system },
-        // /no_think disables Qwen3's reasoning block so it streams JSON directly.
-        { role: 'user', content: `${request.user} /no_think` },
+        { role: 'user', content: userContent },
       ],
       temperature: 0.1,
       max_tokens: 2048,
