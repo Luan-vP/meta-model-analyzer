@@ -3,12 +3,14 @@ import type { LlmProvider, CompletionRequest } from '@core'
 export const DEFAULT_OLLAMA_URL = 'http://localhost:11434'
 export const DEFAULT_OLLAMA_MODEL = 'llama3.1:8b'
 
-// Matches Ollama's own default context window. The system prompt is ~1.4k
-// tokens, leaving room for a typical selection plus the JSON result. Kept small
-// on purpose: a larger window inflates the KV cache and, on memory-tight setups
-// (big models + a browser sharing the GPU), can push Metal into an OOM that
-// returns empty responses. Bump it only if you analyse long documents.
-export const DEFAULT_OLLAMA_NUM_CTX = 4096
+// The system prompt is ~1.4k tokens; input text and the JSON result share the
+// rest of this window. At 4096 a longer document would exhaust the budget mid
+// output, and because annotations are emitted in order of appearance only the
+// start of the text got covered. 8192 leaves comfortable room for the tail.
+// The KV cache is larger, but the OOM risk that motivated a smaller window was
+// specific to much bigger models sharing the GPU with a browser; the small
+// models used here run fine at this size.
+export const DEFAULT_OLLAMA_NUM_CTX = 8192
 
 /**
  * Driven adapter: a local Ollama server via its /api/chat endpoint.
