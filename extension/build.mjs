@@ -55,6 +55,14 @@ await esbuild.build({
 copyFileSync(join(srcDir, 'manifest.json'), join(distDir, 'manifest.json'))
 copyFileSync(join(srcDir, 'popup.html'), join(distDir, 'popup.html'))
 
+// Copy the paper textures the overlay reuses from the web app (public/textures).
+// Declared in manifest web_accessible_resources so the content script can load
+// them via chrome.runtime.getURL on any host page.
+mkdirSync(join(distDir, 'textures'), { recursive: true })
+for (const tex of ['handmade-paper.png', 'paper.png', 'notebook.png']) {
+  copyFileSync(join(repoRoot, 'public', 'textures', tex), join(distDir, 'textures', tex))
+}
+
 // Generate simple PNG icons
 generatePngIcon('icon16.png', 16)
 generatePngIcon('icon48.png', 48)
@@ -143,16 +151,17 @@ function generatePngIcon(filename, size) {
   ihdrView.setUint8(12, 0)  // interlace
   const ihdrChunk = makeChunk('IHDR', ihdrData)
 
-  // IDAT — solid indigo color #6366F1
+  // IDAT — solid burnt-orange accent #C0763B
   const rowBytes = 1 + 3 * width
   const rawData = new Uint8Array(height * rowBytes)
   for (let y = 0; y < height; y++) {
     const rowStart = y * rowBytes
     rawData[rowStart] = 0 // no filter
     for (let x = 0; x < width; x++) {
-      rawData[rowStart + 1 + 3 * x] = 0x63
-      rawData[rowStart + 1 + 3 * x + 1] = 0x66
-      rawData[rowStart + 1 + 3 * x + 2] = 0xF1
+      // Burnt-orange accent #C0763B (matches the web app's paper theme)
+      rawData[rowStart + 1 + 3 * x] = 0xC0
+      rawData[rowStart + 1 + 3 * x + 1] = 0x76
+      rawData[rowStart + 1 + 3 * x + 2] = 0x3B
     }
   }
 

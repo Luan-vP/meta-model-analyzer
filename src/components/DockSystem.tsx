@@ -36,8 +36,15 @@ function SideDock({ items, side, openId, onToggle }: SideDockProps) {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: isLeft ? '-100%' : '100%', opacity: 0 }}
             transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-            style={{ pointerEvents: 'auto' }}
-            className={`w-80 overflow-y-auto bg-zinc-100 paper-surface shadow-soft ${isLeft ? 'border-r border-zinc-200' : 'border-l border-zinc-200'}`}
+            style={{
+              pointerEvents: 'auto',
+              // Directional drop shadow cast toward the page content, so the
+              // panel reads as floating above it while open.
+              boxShadow: isLeft
+                ? '14px 0 34px -6px rgba(60, 43, 20, 0.22)'
+                : '-14px 0 34px -6px rgba(60, 43, 20, 0.22)',
+            }}
+            className={`w-80 overflow-y-auto bg-zinc-100 paper-surface ${isLeft ? 'border-r border-zinc-200' : 'border-l border-zinc-200'}`}
           >
             <div className="p-5">
               {openItem.content}

@@ -6,6 +6,11 @@
 type AnalysisResult = import('./types').AnalysisResult
 type ExtensionMessage = import('./types').ExtensionMessage
 
+// Resolve a packaged paper texture (shared with the web app) to a URL usable
+// from the host page. Only valid at runtime, so callers must build style
+// strings lazily rather than at module-eval time.
+const texUrl = (name: string): string => chrome.runtime.getURL(`textures/${name}`)
+
 // --- State (scoped to init closure) ---
 
 let overlayPanel: OverlayPanel | null = null
@@ -39,20 +44,25 @@ function init() {
 
 // --- Styles ---
 
-const CSS_TEXT = `
+// Built lazily (not at module eval) so texUrl() can resolve packaged textures.
+// Warm "paper" palette + handmade-paper surface, mirroring the web app.
+function buildCssText(): string {
+  const surface = texUrl('handmade-paper.png')
+  return `
   #mma-banner-inner {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
-    background: #ffffff;
-    border: 1px solid #e4e4e7;
+    background-color: #ede3cf;
+    background-image: url('${surface}');
+    border: 1px solid #d6c7b1;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    box-shadow: 0 8px 20px rgba(60, 43, 20, 0.14);
   }
   #mma-banner-text {
     font-size: 12px;
-    color: #52525b;
+    color: #5e5246;
     max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -61,22 +71,22 @@ const CSS_TEXT = `
   #mma-banner-btn {
     font-size: 12px;
     padding: 4px 10px;
-    background: #6366f1;
-    color: white;
+    background: #c0763b;
+    color: #fff;
     border: none;
     border-radius: 6px;
     cursor: pointer;
     white-space: nowrap;
   }
   #mma-banner-btn:hover {
-    background: #4f46e5;
+    background: #a05e2a;
   }
   #mma-banner-close {
     font-size: 11px;
     padding: 4px 6px;
     background: none;
     border: none;
-    color: #a1a1aa;
+    color: #7a6b5c;
     cursor: pointer;
   }
   .mma-panel-header {
@@ -84,33 +94,34 @@ const CSS_TEXT = `
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px;
-    border-bottom: 1px solid #f4f4f5;
+    border-bottom: 1px solid #d6c7b1;
   }
   .mma-panel-title {
     font-size: 14px;
     font-weight: 600;
-    color: #18181b;
+    color: #2b2215;
   }
   .mma-panel-close {
     font-size: 14px;
     background: none;
     border: none;
-    color: #a1a1aa;
+    color: #7a6b5c;
     cursor: pointer;
     padding: 2px 6px;
     border-radius: 4px;
   }
   .mma-panel-close:hover {
-    background: #f4f4f5;
-    color: #52525b;
+    background: #d6c7b1;
+    color: #3d3228;
   }
 `
+}
 
 function injectStyles() {
   if (document.getElementById('mma-extension-styles')) return
   const style = document.createElement('style')
   style.id = 'mma-extension-styles'
-  style.textContent = CSS_TEXT
+  style.textContent = buildCssText()
   document.head.appendChild(style)
 }
 
@@ -131,9 +142,10 @@ class OverlayPanel {
       z-index: 2147483647;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.10);
-      background: #ffffff;
-      border: 1px solid #e4e4e7;
+      box-shadow: 0 12px 32px rgba(60, 43, 20, 0.18), 0 2px 8px rgba(60, 43, 20, 0.10);
+      background-color: #ede3cf;
+      background-image: url('${texUrl('handmade-paper.png')}');
+      border: 1px solid #d6c7b1;
       overflow: hidden;
       transition: opacity 0.2s, transform 0.2s;
       transform-origin: bottom right;
@@ -149,8 +161,8 @@ class OverlayPanel {
         <button class="mma-panel-close">✕</button>
       </div>
       <div style="padding: 24px; text-align: center;">
-        <div style="display: inline-block; width: 24px; height: 24px; border: 3px solid #e4e4e7; border-top-color: #6366f1; border-radius: 50%; animation: mma-spin 0.8s linear infinite;"></div>
-        <p style="margin: 12px 0 0; color: #71717a; font-size: 13px;">Analyzing with Ollama…</p>
+        <div style="display: inline-block; width: 24px; height: 24px; border: 3px solid #d6c7b1; border-top-color: #c0763b; border-radius: 50%; animation: mma-spin 0.8s linear infinite;"></div>
+        <p style="margin: 12px 0 0; color: #5e5246; font-size: 13px;">Analyzing with Ollama…</p>
       </div>
     `
     this.container.style.display = 'block'
@@ -177,7 +189,7 @@ class OverlayPanel {
           <button class="mma-panel-close">✕</button>
         </div>
         <div style="padding: 24px;">
-          <p style="color: #71717a; font-size: 13px; line-height: 1.5;">No Meta-Model violations detected in this text.</p>
+          <p style="color: #5e5246; font-size: 13px; line-height: 1.5;">No Meta-Model violations detected in this text.</p>
         </div>
       `
       this.container.style.display = 'block'
@@ -201,7 +213,7 @@ class OverlayPanel {
     const legendHtml = Object.entries(counts)
       .map(([category, count]) => {
         const colors = categoryColors[category]
-        return `<span style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #52525b;">
+        return `<span style="display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: #5e5246;">
           <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${colors.underline};"></span>
           <span style="text-transform: capitalize;">${category}</span> (${count})
         </span>`
@@ -211,17 +223,17 @@ class OverlayPanel {
     const annotationsHtml = annotations
       .map((a) => {
         const colors = categoryColors[a.category]
-        return `<div style="margin-bottom: 12px; padding: 10px; border-radius: 8px; border: 1px solid #f4f4f5; background: #fafafa;">
+        return `<div style="margin-bottom: 12px; padding: 10px; border-radius: 8px; border: 1px solid #d6c7b1; background: #f3efe0;">
           <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
             <span style="display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; background: ${colors.badgeBg}; color: ${colors.badgeText}; text-transform: uppercase;">
               ${a.category}
             </span>
-            <span style="font-size: 11px; color: #71717a; text-transform: capitalize;">${a.violationType.replace(/-/g, ' ')}</span>
+            <span style="font-size: 11px; color: #7a6b5c; text-transform: capitalize;">${a.violationType.replace(/-/g, ' ')}</span>
           </div>
-          <p style="font-size: 13px; font-weight: 500; color: #18181b; margin: 4px 0; text-decoration: underline; text-decoration-color: ${colors.underline}; text-decoration-style: wavy; text-decoration-thickness: 2px; text-underline-offset: 3px;">
+          <p style="font-size: 13px; font-weight: 500; color: #2b2215; margin: 4px 0; text-decoration: underline; text-decoration-color: ${colors.underline}; text-decoration-style: wavy; text-decoration-thickness: 2px; text-underline-offset: 3px;">
             "${escapeHtml(a.text)}"
           </p>
-          <p style="font-size: 12px; color: #27272a; margin: 4px 0 0;">
+          <p style="font-size: 12px; color: #2b2215; margin: 4px 0 0;">
             "${escapeHtml(a.challengeQuestion)}"
           </p>
         </div>`
@@ -233,13 +245,13 @@ class OverlayPanel {
         <span class="mma-panel-title">Meta-Model Analyzer</span>
         <button class="mma-panel-close">✕</button>
       </div>
-      <div style="padding: 12px 16px; border-bottom: 1px solid #f4f4f5;">
+      <div style="padding: 12px 16px; border-bottom: 1px solid #d6c7b1;">
         <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
           ${legendHtml}
         </div>
       </div>
       <div style="padding: 12px 16px; max-height: 400px; overflow-y: auto;">
-        <div style="font-size: 12px; color: #a1a1aa; margin-bottom: 8px; padding: 6px 8px; background: #fafafa; border-radius: 6px;">
+        <div style="font-size: 12px; color: #7a6b5c; margin-bottom: 8px; padding: 6px 8px; background-color: #ede3cf; background-image: url('${texUrl('notebook.png')}'); border: 1px solid #d6c7b1; border-radius: 6px;">
           Analyzed: "${escapeHtml(originalText.slice(0, 100))}${originalText.length > 100 ? '…' : ''}"
         </div>
         ${annotationsHtml}

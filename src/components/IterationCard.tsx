@@ -24,7 +24,10 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}
       transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-      className="flex flex-col gap-3 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 p-5 paper-surface shadow-soft"
+      // Firmer but small drop shadow: tight offset/blur, higher opacity than
+      // the soft page shadow, so cards sit just above the page.
+      style={{ boxShadow: '0 2px 8px -1px rgba(60, 43, 20, 0.22)' }}
+      className="flex flex-col gap-3 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 p-5 paper-surface"
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wide text-zinc-500">
