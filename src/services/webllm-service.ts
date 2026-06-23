@@ -62,6 +62,13 @@ export class WebLLMService implements LlmProvider {
     )
 
     try {
+      // NOTE: we deliberately do NOT pass `response_format: json_object` here.
+      // WebLLM enforces structured output via XGrammar, which crashes the WASM
+      // runtime with "Cannot pass deleted object as a pointer of type
+      // GrammarMatcher" on some models (notably Qwen3-0.6B) — see
+      // mlc-ai/web-llm#766. Once it aborts, the engine is unrecoverable, so a
+      // retry can't help. Instead we rely on the strong few-shot JSON examples
+      // in the system prompt and the lenient parseAnnotationsJSON() parser.
       const response = await this.engine.chat.completions.create({
         messages: [
           { role: 'system', content: request.system },
@@ -69,10 +76,6 @@ export class WebLLMService implements LlmProvider {
         ],
         temperature: 0.1,
         max_tokens: 2048,
-        response_format: {
-          type: 'json_object',
-          schema: JSON.stringify(request.schema),
-        } as { type: 'json_object' },
       })
 
       const content = response.choices[0]?.message?.content
