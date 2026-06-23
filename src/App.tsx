@@ -30,20 +30,17 @@ export default function App() {
 
   const visible = iterations.slice(-VISIBLE_COUNT)
 
-  // Auto-probe on first WebLLM use: if the user is on WebLLM with no model
-  // chosen yet, pick a device-safe default rather than leaving them to load a
-  // model that may be too large for their hardware. The ref guards against the
-  // probe re-firing while it runs (and StrictMode's double-invoke).
-  const autoProbeRef = useRef(false)
+  // Auto-probe on first WebLLM use: if the user lands on WebLLM with no model
+  // chosen, pick a device-safe default rather than leaving them to load one
+  // that may be too large for their hardware. Fires at most ONCE per session —
+  // it must NOT re-fire when the model is later cleared (e.g. after cancelling
+  // a load), or it re-picks a model and triggers a reload loop that races the
+  // provider init and disposes the live engine mid-generation.
+  const autoProbedRef = useRef(false)
   useEffect(() => {
-    if (provider === 'webllm' && !webllmModel && !probing && !autoProbeRef.current) {
-      autoProbeRef.current = true
+    if (provider === 'webllm' && !webllmModel && !probing && !autoProbedRef.current) {
+      autoProbedRef.current = true
       probeWebllmModel()
-    }
-    // Reset the guard once a model is set or the user leaves WebLLM, so a later
-    // first-use (e.g. after clearing the model) probes again.
-    if (provider !== 'webllm' || webllmModel) {
-      autoProbeRef.current = false
     }
   }, [provider, webllmModel, probing, probeWebllmModel])
 

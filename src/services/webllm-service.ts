@@ -94,10 +94,7 @@ export class WebLLMService implements LlmProvider {
   }
 
   dispose(): void {
-    // Log who tears the engine down — an "Object has already been disposed"
-    // error during generation means dispose() ran between load and inference.
-    // The stack tells us whether it was us (effect cleanup / cancel) or not.
-    console.warn(`[webllm] dispose() called for ${this.modelId}`, new Error('dispose stack').stack)
+    console.log(`[webllm] dispose() ${this.modelId}`)
     this.worker?.terminate()
     this.worker = null
     this.engine = null
