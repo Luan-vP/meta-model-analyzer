@@ -30,6 +30,7 @@ export function useLLMProvider(
   }, [])
 
   const initializeProvider = useCallback(async () => {
+    console.log(`[provider] (re)initializing: provider=${provider} webllmModel=${webllmModel || '(none)'}`)
     // Dispose previous service
     serviceRef.current?.dispose()
     cancelledRef.current = false
@@ -91,6 +92,7 @@ export function useLLMProvider(
   useEffect(() => {
     initializeProvider()
     return () => {
+      console.log('[provider] effect cleanup — disposing current service')
       serviceRef.current?.dispose()
     }
   }, [initializeProvider])
