@@ -9,6 +9,7 @@ const STORAGE_KEYS = {
   webllmModel: 'mma-webllm-model',
   ollamaUrl: 'mma-ollama-url',
   ollamaModel: 'mma-ollama-model',
+  debugMode: 'mma-debug-mode',
 } as const
 
 export function useSettings() {
@@ -27,6 +28,9 @@ export function useSettings() {
   )
   const [probing, setProbing] = useState(false)
   const [probeResult, setProbeResult] = useState<ProbeResult | null>(null)
+  const [debugMode, setDebugModeState] = useState<boolean>(
+    () => localStorage.getItem(STORAGE_KEYS.debugMode) === '1',
+  )
 
   const setApiKey = useCallback((key: string) => {
     localStorage.setItem(STORAGE_KEYS.apiKey, key)
@@ -57,6 +61,11 @@ export function useSettings() {
     setOllamaModelState(model)
   }, [])
 
+  const setDebugMode = useCallback((on: boolean) => {
+    localStorage.setItem(STORAGE_KEYS.debugMode, on ? '1' : '0')
+    setDebugModeState(on)
+  }, [])
+
   const probeWebllmModel = useCallback(async () => {
     setProbing(true)
     try {
@@ -84,5 +93,7 @@ export function useSettings() {
     probeWebllmModel,
     probing,
     probeResult,
+    debugMode,
+    setDebugMode,
   }
 }

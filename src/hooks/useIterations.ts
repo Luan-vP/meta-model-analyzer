@@ -55,6 +55,10 @@ export function useIterations(service: LlmProvider | null) {
           return isLast ? [...updated, makeIteration(n + 1)] : updated
         })
       } catch (e) {
+        // Log the raw throwable before classification — for local inference
+        // (WebLLM) the real cause is otherwise swallowed by the generic UI
+        // message. Visible in the in-app debug console (Settings → Debug mode).
+        console.error('[analyze] iteration', n, 'failed:', e)
         const { kind, message } = classifyProxyError(e)
         setIterations((prev) =>
           prev.map((it) =>

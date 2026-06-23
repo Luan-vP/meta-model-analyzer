@@ -57,24 +57,37 @@ export class WebLLMService implements LlmProvider {
     const isQwen3 = this.modelId.startsWith('Qwen3-')
     const userContent = isQwen3 ? `${request.user} /no_think` : request.user
 
-    const response = await this.engine.chat.completions.create({
-      messages: [
-        { role: 'system', content: request.system },
-        { role: 'user', content: userContent },
-      ],
-      temperature: 0.1,
-      max_tokens: 2048,
-      response_format: {
-        type: 'json_object',
-        schema: JSON.stringify(request.schema),
-      } as { type: 'json_object' },
-    })
+    console.log(
+      `[webllm] generating with ${this.modelId}: system=${request.system.length} chars, user=${userContent.length} chars`,
+    )
 
-    const content = response.choices[0]?.message?.content
-    if (!content) {
-      throw new Error('No response from WebLLM')
+    try {
+      const response = await this.engine.chat.completions.create({
+        messages: [
+          { role: 'system', content: request.system },
+          { role: 'user', content: userContent },
+        ],
+        temperature: 0.1,
+        max_tokens: 2048,
+        response_format: {
+          type: 'json_object',
+          schema: JSON.stringify(request.schema),
+        } as { type: 'json_object' },
+      })
+
+      const content = response.choices[0]?.message?.content
+      if (!content) {
+        throw new Error('No response from WebLLM (empty completion)')
+      }
+      console.log(`[webllm] generation OK: ${content.length} chars returned`)
+      return content
+    } catch (e) {
+      // Re-throw with the model id attached so the surfaced message names the
+      // model that failed. The raw error is also logged for the debug console.
+      console.error(`[webllm] generation failed on ${this.modelId}:`, e)
+      const detail = e instanceof Error ? e.message : String(e)
+      throw new Error(`WebLLM generation failed (${this.modelId}): ${detail}`)
     }
-    return content
   }
 
   dispose(): void {

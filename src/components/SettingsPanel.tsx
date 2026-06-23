@@ -27,6 +27,8 @@ interface SettingsPanelProps {
   probing: boolean
   probeResult: ProbeResult | null
   onCancelLoading: () => void
+  debugMode: boolean
+  onDebugModeChange: (on: boolean) => void
 }
 
 export function SettingsPanel({
@@ -49,6 +51,8 @@ export function SettingsPanel({
   probing,
   probeResult,
   onCancelLoading,
+  debugMode,
+  onDebugModeChange,
 }: SettingsPanelProps) {
   return (
     <div className="flex flex-col gap-3">
@@ -202,6 +206,17 @@ export function SettingsPanel({
       )}
 
       {providerError && <p className="text-sm text-red-600">{providerError}</p>}
+
+      <label className="mt-1 flex items-center gap-2 border-t border-zinc-200 pt-3 text-sm text-zinc-600">
+        <input
+          type="checkbox"
+          checked={debugMode}
+          onChange={(e) => onDebugModeChange(e.target.checked)}
+          className="h-3.5 w-3.5 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-400"
+        />
+        Debug mode
+        <span className="text-xs text-zinc-400">— show captured logs in a panel at the bottom</span>
+      </label>
     </div>
   )
 }
