@@ -10,6 +10,7 @@ const STORAGE_KEYS = {
   ollamaUrl: 'mma-ollama-url',
   ollamaModel: 'mma-ollama-model',
   debugMode: 'mma-debug-mode',
+  maxRetries: 'mma-max-retries',
 } as const
 
 export function useSettings() {
@@ -31,6 +32,11 @@ export function useSettings() {
   const [debugMode, setDebugModeState] = useState<boolean>(
     () => localStorage.getItem(STORAGE_KEYS.debugMode) === '1',
   )
+  const [maxRetries, setMaxRetriesState] = useState<number>(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.maxRetries)
+    const raw = stored === null ? NaN : Number(stored)
+    return Number.isFinite(raw) && raw >= 0 && raw <= 5 ? raw : 3
+  })
 
   const setApiKey = useCallback((key: string) => {
     localStorage.setItem(STORAGE_KEYS.apiKey, key)
@@ -66,6 +72,12 @@ export function useSettings() {
     setDebugModeState(on)
   }, [])
 
+  const setMaxRetries = useCallback((n: number) => {
+    const clamped = Math.max(0, Math.min(5, Math.round(n)))
+    localStorage.setItem(STORAGE_KEYS.maxRetries, String(clamped))
+    setMaxRetriesState(clamped)
+  }, [])
+
   const probeWebllmModel = useCallback(async () => {
     setProbing(true)
     try {
@@ -95,5 +107,7 @@ export function useSettings() {
     probeResult,
     debugMode,
     setDebugMode,
+    maxRetries,
+    setMaxRetries,
   }
 }

@@ -24,9 +24,10 @@ export default function App() {
     ollamaModel, setOllamaModel,
     probeWebllmModel, probing, probeResult,
     debugMode, setDebugMode,
+    maxRetries, setMaxRetries,
   } = useSettings()
   const { service, ready, loading, progress, error: providerError, cancelLoading } = useLLMProvider(provider, apiKey, webllmModel, ollamaUrl, ollamaModel)
-  const { iterations, analyze, setText } = useIterations(service)
+  const { iterations, analyze, setText } = useIterations(service, maxRetries)
 
   const visible = iterations.slice(-VISIBLE_COUNT)
 
@@ -86,6 +87,8 @@ export default function App() {
           onCancelLoading={handleCancelLoading}
           debugMode={debugMode}
           onDebugModeChange={setDebugMode}
+          maxRetries={maxRetries}
+          onMaxRetriesChange={setMaxRetries}
         />
       ),
     },

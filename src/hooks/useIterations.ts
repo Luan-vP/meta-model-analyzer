@@ -11,6 +11,8 @@ export interface Iteration {
   status: IterationStatus
   error: string | null
   errorKind: ProxyErrorKind | null
+  retryAttempt: number
+  retryMax: number
 }
 
 const makeIteration = (n: number): Iteration => ({
@@ -20,12 +22,16 @@ const makeIteration = (n: number): Iteration => ({
   status: 'editing',
   error: null,
   errorKind: null,
+  retryAttempt: 0,
+  retryMax: 0,
 })
 
-export function useIterations(service: LlmProvider | null) {
+export function useIterations(service: LlmProvider | null, maxRetries: number) {
   const [iterations, setIterations] = useState<Iteration[]>(() => [makeIteration(1)])
   const ref = useRef(iterations)
   ref.current = iterations
+  const maxRetriesRef = useRef(maxRetries)
+  maxRetriesRef.current = maxRetries
 
   const setText = useCallback((n: number, text: string) => {
     setIterations((prev) => prev.map((it) => (it.n === n ? { ...it, text } : it)))
@@ -46,10 +52,24 @@ export function useIterations(service: LlmProvider | null) {
       )
 
       try {
-        const annotations = await analyzeText(service, trimmed)
+        let annotations = await analyzeText(service, trimmed)
+        let attempt = 0
+        while (annotations.length === 0 && attempt < maxRetriesRef.current) {
+          attempt++
+          setIterations((prev) =>
+            prev.map((it) =>
+              it.n === n
+                ? { ...it, status: 'analyzing', retryAttempt: attempt, retryMax: maxRetriesRef.current }
+                : it,
+            ),
+          )
+          annotations = await analyzeText(service, trimmed)
+        }
         setIterations((prev) => {
           const updated = prev.map((it) =>
-            it.n === n ? { ...it, annotations, status: 'analyzed' as const } : it,
+            it.n === n
+              ? { ...it, annotations, status: 'analyzed' as const, retryAttempt: 0 }
+              : it,
           )
           const isLast = updated[updated.length - 1]?.n === n
           return isLast ? [...updated, makeIteration(n + 1)] : updated
@@ -62,7 +82,9 @@ export function useIterations(service: LlmProvider | null) {
         const { kind, message } = classifyProxyError(e)
         setIterations((prev) =>
           prev.map((it) =>
-            it.n === n ? { ...it, status: 'editing' as const, error: message, errorKind: kind } : it,
+            it.n === n
+              ? { ...it, status: 'editing' as const, error: message, errorKind: kind, retryAttempt: 0 }
+              : it,
           ),
         )
       }

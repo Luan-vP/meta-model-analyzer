@@ -13,7 +13,7 @@ interface IterationCardProps {
 }
 
 export function IterationCard({ iteration, onTextChange, onAnalyze, providerReady, onSwitchToWebLLM }: IterationCardProps) {
-  const { n, text, annotations, status, error, errorKind } = iteration
+  const { n, text, annotations, status, error, errorKind, retryAttempt, retryMax } = iteration
   const isAnalyzed = status === 'analyzed'
   const isAnalyzing = status === 'analyzing'
 
@@ -96,6 +96,11 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
                 </div>
               )}
             </div>
+          )}
+          {isAnalyzing && retryAttempt > 0 && (
+            <p className="text-sm font-medium text-amber-600">
+              No violations detected, retrying ({retryAttempt}/{retryMax})
+            </p>
           )}
           <button
             type="button"
