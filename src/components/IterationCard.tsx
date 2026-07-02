@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import type { Iteration } from '../hooks/useIterations'
 import { AnnotatedText } from './AnnotatedText'
 
-const EXAMPLE_TEXT = `Everyone knows I'm a failure. I can't do anything right. My boss didn't say hello this morning, which means he's angry at me. I should always put others first. Things are just getting worse and worse. People don't care about me. It's wrong to think about yourself. She makes me so angry. Nobody ever listens to me. I have to be perfect at everything I do.`
+const EXAMPLE_TEXT = `Sometimes coincidences are just so on the nose. We decided to just do it and paint the van organically yesterday, and yeah, today I got the future me letter that says I should plan it. The whole way that letter speaks to me is incredible. It's like every step of the way I was reading something that was like right exactly what I needed. I think love is the only metaphysical force we need to worry about. Maybe telepathy is possible, maybe panpsychism truly is saying we connect to a greater consciousness, but all I was doing in that letter, was to try to be as loving and kind to myself as I could, and to be vulnerable in every moment where I felt self-censorship pull me back. What came out was the perfect letter for me to receive today. And I know there's no way I could have planned my way into that. Incidentally, in the letter I ask myself to reflect on planning, and how my process has gone for me. I knew that bit was coming, because it's the bit that I've remembered. And my daily habits “planning” task is the one I never do because it was just so nebulous and scary. I guess I never knew what to do about it. Like, was I meant to sit and just figure out what the next few weeks or months would look like? With infinite wisdom? I work best in increments, and so the key, which seeing I received the the letter brought me to, is that it needs to be as straight forward as my other habits, like “yoga”. Now I have to do 3 small things relating to the future, like opening my calendar and looking at my week coming up, or remembering a thing to do, and making a not about it, or planning an event. These all count, 3 of those a day earns a tick. And if I do all my habits, I earn a coffee!`
 
 interface IterationCardProps {
   iteration: Iteration
@@ -53,8 +53,8 @@ export function IterationCard({ iteration, onTextChange, onAnalyze, providerRead
             onChange={(e) => onTextChange(n, e.target.value)}
             placeholder={
               n === 1
-                ? 'Paste or type text here to analyze for Meta-Model violations...'
-                : 'Rewrite this version to address the comments above...'
+                ? 'Paste or type text here...'
+                : 'Write further thoughts and reflections here...'
             }
             rows={6}
             disabled={isAnalyzing}
