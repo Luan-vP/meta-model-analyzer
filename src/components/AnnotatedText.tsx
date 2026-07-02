@@ -12,8 +12,13 @@ export function AnnotatedText({ result }: AnnotatedTextProps) {
 
   if (annotations.length === 0) {
     return (
-      <div className="rounded-lg border border-zinc-200 bg-zinc-100 p-6 paper-surface shadow-soft">
-        <p className="text-zinc-500">No Meta-Model violations detected in this text.</p>
+      <div className="flex flex-col gap-2">
+        <div className="whitespace-pre-wrap rounded-lg border border-zinc-200 bg-zinc-100 p-6 text-base leading-relaxed text-zinc-800 notebook-lined shadow-soft">
+          {originalText}
+        </div>
+        <p className="text-sm italic text-zinc-400">
+          No Meta-Model violations detected in this text.
+        </p>
       </div>
     )
   }
