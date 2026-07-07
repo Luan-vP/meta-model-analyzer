@@ -20,8 +20,6 @@ The app is deployed to **GitHub Pages** and served at <https://analyzer.luanvp.i
   - **WebGPU** (`navigator.gpu`), which the local WebLLM provider depends on, is secure-context-only — over plain HTTP it is unavailable and local models cannot load.
   - **`crypto.randomUUID()`** is secure-context-only. The WebLLM worker-message protocol calls it on every message, so over HTTP it throws `crypto.randomUUID is not a function` (seen in the Settings tab). `localhost` is always a secure context, so this only surfaces on the deployed HTTP origin. We ship a `crypto.getRandomValues`-based polyfill (`src/lib/randomUUIDPolyfill.ts`, imported in both `main.tsx` and the WebLLM worker) as defense-in-depth, but enforcing HTTPS is still required because WebGPU itself needs a secure context.
 
-> Note: `CLAUDE.md` documents an earlier Google Cloud Run deployment. The live deployment is now GitHub Pages (as above); treat `CLAUDE.md`'s Cloud Run section as historical until it is updated.
-
 ## Claude Code skill: NLP Meta-Model distortions
 
 This repo ships a Claude Code skill at [`.claude/skills/distortions/SKILL.md`](.claude/skills/distortions/SKILL.md) that packages the 13-type Meta-Model distortions catalogue (descriptions, signal words, canonical examples, challenge questions, and the annotation JSON schema). Any `claude` session started inside this repo can load it on demand when asked about meta-model violations, linguistic distortions, or Bandler & Grinder's Meta-Model — making the repo's knowledge usable outside the web app.

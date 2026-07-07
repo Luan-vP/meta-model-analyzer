@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import App from './App'
+import { PwaUpdatePrompt } from './components/PwaUpdatePrompt'
 import { installConsoleCapture } from './services/debug-log'
 
 // Mirror console output into the in-app debug buffer so logs are visible on
@@ -30,5 +31,6 @@ createRoot(document.getElementById('root')!).render(
         />
       </Routes>
     </BrowserRouter>
+    <PwaUpdatePrompt />
   </StrictMode>,
 )
