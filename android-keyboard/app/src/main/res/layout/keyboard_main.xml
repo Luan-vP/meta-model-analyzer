@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Main keyboard layout: candidate bar above the keyboard view.
+  The candidate bar shows violations as red-underlined spelling chips.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?android:attr/colorBackground">
+
+    <!-- Candidate suggestion bar (spelling error chips) -->
+    <com.luanvp.metamodel.keyboard.ui.CandidateView
+        android:id="@+id/candidateView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        android:paddingTop="2dp"
+        android:paddingBottom="2dp" />
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:visibility="gone" />
+
+    <!-- Keyboard keys -->
+    <android.inputmethodservice.KeyboardView
+        android:id="@+id/keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:keyBackground="@drawable/key_background"
+        android:keyTextColor="@android:color/white"
+        android:keyTextSize="20sp"
+        android:labelTextSize="16sp"
+        android:keyPreviewLayout="@layout/key_preview" />
+</LinearLayout>

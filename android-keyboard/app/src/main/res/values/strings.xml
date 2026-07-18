@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Meta-Model Keyboard</string>
+    <string name="keyboard_subtype_label">Meta-Model EN</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Keyboard Settings</string>
+    <string name="settings_server_url_label">LLM Server URL</string>
+    <string name="settings_model_label">Model Name</string>
+    <string name="settings_api_key_label">API Key (optional)</string>
+    <string name="settings_debounce_label">Debounce Delay (ms)</string>
+    <string name="settings_save">Save</string>
+
+    <!-- Candidate bar hints -->
+    <string name="candidate_hint_no_violations">No issues detected</string>
+    <string name="candidate_hint_analyzing">Analyzing…</string>
+    <string name="candidate_hint_error">Analysis unavailable</string>
+</resources>

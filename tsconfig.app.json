@@ -28,8 +28,10 @@
     "baseUrl": ".",
     "paths": {
       "@core": ["./core/index.ts"],
-      "@adapters/*": ["./adapters/*"]
+      "@adapters/*": ["./adapters/*"],
+      "@keyboard": ["./keyboard/index.ts"],
+      "@keyboard/*": ["./keyboard/*"]
     }
   },
-  "include": ["src", "core", "adapters"]
+  "include": ["src", "core", "adapters", "keyboard"]
 }

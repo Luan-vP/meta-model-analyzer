@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="mm_primary">#4A6FA5</color>
+    <color name="mm_primary_dark">#3A5A88</color>
+    <color name="mm_accent">#E63946</color>
+
+    <color name="key_background">#2C3E50</color>
+    <color name="key_text">@android:color/white</color>
+    <color name="key_modifier_background">#5D6D7E</color>
+    <color name="key_space_background">#34495E</color>
+
+    <color name="candidate_chip_background">#F8F9FA</color>
+    <color name="candidate_violation_underline">#DC3545</color>
+    <color name="candidate_question_text">#6C757D</color>
+</resources>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="keyboard_key_height">48dp</dimen>
+    <dimen name="keyboard_row_gap">2dp</dimen>
+    <dimen name="candidate_bar_height">36dp</dimen>
+    <dimen name="chip_horizontal_padding">8dp</dimen>
+    <dimen name="chip_vertical_padding">4dp</dimen>
+    <dimen name="chip_corner_radius">4dp</dimen>
+</resources>
