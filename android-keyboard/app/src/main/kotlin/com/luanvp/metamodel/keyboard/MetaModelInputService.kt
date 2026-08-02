@@ -58,7 +58,7 @@ class MetaModelInputService : InputMethodService(),
         }
 
         candidateView = root.findViewById<CandidateView>(R.id.candidateView)
-        candidateView?.setOnChipClickListener = { annotation ->
+        candidateView?.onChipClickListener = { annotation: Annotation ->
             onChipClicked(annotation)
         }
 
@@ -93,7 +93,7 @@ class MetaModelInputService : InputMethodService(),
 
         when (primaryCode) {
             -1 -> {
-                // Shift — toggle caps (simplified: just send shift event)
+                // Shift
                 ic.sendKeyEvent(android.view.KeyEvent(
                     android.view.KeyEvent.ACTION_DOWN,
                     android.view.KeyEvent.KEYCODE_SHIFT_LEFT
@@ -107,7 +107,7 @@ class MetaModelInputService : InputMethodService(),
                 ))
             }
             -3 -> {
-                // 123 — symbol mode toggle (not implemented in v1)
+                // 123 — symbol mode (not implemented in v1)
             }
             -4 -> {
                 // Done / Enter
@@ -154,14 +154,13 @@ class MetaModelInputService : InputMethodService(),
     }
 
     private fun cancelPendingAnalysis() {
-        debounceJob?.cancelAndJoin()
+        debounceJob?.cancel()
         debounceJob = null
     }
 
     private fun performAnalysis() {
         val text = getCurrentText() ?: return
         if (text.length < 10) {
-            // Too short to analyze
             candidateView?.clear()
             return
         }
@@ -187,8 +186,7 @@ class MetaModelInputService : InputMethodService(),
     private fun getCurrentText(): String? {
         val ic = currentInputConnection ?: return null
         val request = ExtractedTextRequest().apply {
-            startOffset = -50000  // large negative = from start
-            endOffset = 50000     // large positive = to end
+            // Get a large window around the cursor
             flags = 0
         }
         val extracted = ic.getExtractedText(request, 0) ?: return null

@@ -1,38 +1,32 @@
 package com.luanvp.metamodel.keyboard.network
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
  * OpenAI-compatible chat completion protocol types.
- *
- * Minimal subset of the OpenAI Chat Completions API, covering sync and
- * streaming completions. Compatible with Ollama (/v1), LM Studio, LiteLLM,
- * vLLM, and any server implementing the OpenAI-compatible endpoint.
- *
  * Mirrors keyboard/protocol/openai.ts.
  */
 
-// ── Request ──────────────────────────────────────────────────────────
-
 @Serializable
 data class ChatMessage(
-    val role: String,        // "system" | "user" | "assistant" | "tool"
+    val role: String,
     val content: String?,
-    val toolCallId: String? = null,
-    val toolCalls: List<ToolCall>? = null,
+    @SerialName("tool_call_id") val toolCallId: String? = null,
+    @SerialName("tool_calls") val toolCalls: List<ToolCall>? = null,
 )
 
 @Serializable
 data class ToolCall(
     val id: String,
-    val `type`: String = "function",
+    val type: String = "function",
     val function: ToolCallFunction,
 )
 
 @Serializable
 data class ToolCallFunction(
     val name: String,
-    val arguments: String,  // JSON-encoded
+    val arguments: String,
 )
 
 @Serializable
@@ -40,31 +34,22 @@ data class ChatCompletionRequest(
     val model: String,
     val messages: List<ChatMessage>,
     val temperature: Double? = null,
-    val maxTokens: Int? = null,
+    @SerialName("max_tokens") val maxTokens: Int? = null,
     val stream: Boolean = false,
-    val responseFormat: ResponseFormat? = null,
-    /** Ollama-specific shorthand for JSON mode. */
+    @SerialName("response_format") val responseFormat: ResponseFormat? = null,
     val format: String? = null,
 )
 
 @Serializable
 data class ResponseFormat(
     val type: String = "json_schema",
-    val jsonSchema: JsonSchema? = null,
+    @SerialName("json_schema") val jsonSchema: Map<String, String>? = null,
 )
-
-@Serializable
-data class JsonSchema(
-    val name: String,
-    val schema: Map<String, Any>,
-)
-
-// ── Response (non-streaming) ─────────────────────────────────────────
 
 @Serializable
 data class ChatCompletionResponse(
     val id: String,
-    val `object`: String,
+    @SerialName("object") val responseObject: String,
     val created: Long,
     val model: String,
     val choices: List<ChatCompletionChoice>,
@@ -75,12 +60,12 @@ data class ChatCompletionResponse(
 data class ChatCompletionChoice(
     val index: Int,
     val message: ChatMessage,
-    val finishReason: String? = null,
+    @SerialName("finish_reason") val finishReason: String? = null,
 )
 
 @Serializable
 data class CompletionUsage(
-    val promptTokens: Int,
-    val completionTokens: Int,
-    val totalTokens: Int,
+    @SerialName("prompt_tokens") val promptTokens: Int,
+    @SerialName("completion_tokens") val completionTokens: Int,
+    @SerialName("total_tokens") val totalTokens: Int,
 )

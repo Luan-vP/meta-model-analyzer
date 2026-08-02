@@ -3,6 +3,5 @@
     <subtype
         android:label="@string/keyboard_subtype_label"
         android:imeSubtypeMode="keyboard"
-        android:imeSubtypeLanguageOverride="en"
         android:isAuxiliary="false" />
 </input-method>

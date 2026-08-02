@@ -15,7 +15,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings_server_url_label"
-            android:textAppearance="?attr/textAppearanceLabelMedium"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_marginTop="8dp" />
 
         <EditText
@@ -29,7 +29,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings_model_label"
-            android:textAppearance="?attr/textAppearanceLabelMedium"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_marginTop="16dp" />
 
         <EditText
@@ -43,7 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings_api_key_label"
-            android:textAppearance="?attr/textAppearanceLabelMedium"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_marginTop="16dp" />
 
         <EditText
@@ -57,7 +57,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/settings_debounce_label"
-            android:textAppearance="?attr/textAppearanceLabelMedium"
+            android:textAppearance="?android:attr/textAppearanceMedium"
             android:layout_marginTop="16dp" />
 
         <EditText

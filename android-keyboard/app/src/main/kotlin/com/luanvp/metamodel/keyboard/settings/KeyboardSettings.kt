@@ -9,9 +9,9 @@ import android.inputmethodservice.Keyboard.Key
  *
  * Persists server URL, model name, and API key across sessions.
  */
-class KeyboardSettings(context: Context) {
+class KeyboardSettings(private val ctx: Context) {
 
-    private val prefs = context.getSharedPreferences(
+    private val prefs = ctx.getSharedPreferences(
         KEYBOARD_PREFS_NAME,
         Context.MODE_PRIVATE,
     )
@@ -57,6 +57,6 @@ class KeyboardSettings(context: Context) {
      * defined in res/xml/keyboard_qwerty.xml.
      */
     fun getKeyboardLayout(): Keyboard {
-        return Keyboard(context, com.luanvp.metamodel.keyboard.R.xml.keyboard_qwerty)
+        return Keyboard(ctx, com.luanvp.metamodel.keyboard.R.xml.keyboard_qwerty)
     }
 }

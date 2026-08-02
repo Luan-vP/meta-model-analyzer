@@ -1,14 +1,15 @@
 package com.luanvp.metamodel.keyboard.ui
 
 import android.content.Context
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.text.SpannableString
-import android.text.style.UnderlineSpan
+import android.text.style.ReplacementSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -36,12 +37,10 @@ class CandidateView @JvmOverloads constructor(
     init {
         LayoutInflater.from(context).inflate(R.layout.candidate_bar, this, true)
         chipContainer = findViewById(R.id.chipContainer)
-        fillViewport = true
     }
 
     /**
      * Update the candidate bar with new annotations.
-     * Clears existing chips and creates new ones.
      */
     fun updateChips(annotations: List<Annotation>) {
         chipContainer.removeAllViews()
@@ -91,36 +90,56 @@ class CandidateView @JvmOverloads constructor(
     }
 
     /**
-     * Format the annotation text as a "spelling error" — red wavy underline.
-     * Uses a custom span that draws the red underline independently of text color.
+     * Format the annotation text as a "spelling error" — red underline drawn
+     * below the text using a custom ReplacementSpan.
      */
     private fun formatChipText(text: String): CharSequence {
         val spannable = SpannableString(text)
         spannable.setSpan(
-            object : android.text.style.MetricAffectingSpan() {
-                override fun updateDrawState(ds: TextPaint) {
-                    ds.flags = ds.flags or Paint.UnderlineText_FLAG
-                    // Underline inherits the paint color; we draw our own below
+            object : ReplacementSpan() {
+                override fun getSize(
+                    paint: Paint,
+                    text: CharSequence,
+                    start: Int,
+                    end: Int,
+                    fm: Paint.FontMetricsInt?,
+                ): Int {
+                    val width = paint.measureText(text, start, end).toInt()
+                    fm?.let {
+                        val baseline = fm.descent - fm.ascent
+                        it.top = fm.ascent - 4
+                        it.bottom = fm.descent + 4
+                    }
+                    return width
                 }
 
-                override fun updateMeasureState(paint: TextPaint) {
-                    paint.flags = paint.flags or Paint.UnderlineText_FLAG
-                }
-            },
-            0,
-            text.length,
-            android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE,
-        )
-        // Set the text color to the violation red so the underline matches
-        spannable.setSpan(
-            object : android.text.style.CharacterStyle() {
-                override fun updateDrawState(ds: TextPaint) {
-                    ds.color = Color.rgb(220, 53, 69) // Bootstrap danger red
-                    ds.flags = ds.flags or Paint.UnderlineText_FLAG
-                }
+                override fun draw(
+                    canvas: Canvas,
+                    text: CharSequence,
+                    start: Int,
+                    end: Int,
+                    x: Float,
+                    top: Int,
+                    baseline: Int,
+                    bottom: Int,
+                    paint: Paint,
+                ) {
+                    // Draw the text normally
+                    canvas.drawText(text, start, end, x, baseline.toFloat(), paint)
 
-                override fun updateMeasureState(paint: TextPaint) {
-                    paint.flags = paint.flags or Paint.UnderlineText_FLAG
+                    // Draw a red wavy underline
+                    val underlinePaint = Paint(paint).apply {
+                        color = Color.RED
+                        strokeWidth = 2f
+                        style = Paint.Style.STROKE
+                    }
+
+                    val bounds = Rect()
+                    paint.getTextBounds(text.toString(), start, end - start, bounds)
+                    val underlineY = baseline.toFloat() + 6f
+
+                    // Simple dashed underline
+                    canvas.drawLine(x, underlineY, x + paint.measureText(text.toString(), start, end - start), underlineY, underlinePaint)
                 }
             },
             0,

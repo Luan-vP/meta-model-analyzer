@@ -24,7 +24,6 @@ class MetaModelAnalyzer(
 
     private val json = Json {
         ignoreUnknownKeys = true
-        lenient = true
     }
 
     /**
@@ -97,7 +96,7 @@ class MetaModelAnalyzer(
 
             // Try parsing as raw array
             try {
-                val arrayStr = if (candidate.startsWith('[')) candidate else "[${candidate.removePrefix('{').removeSuffix('}')}]"
+                val arrayStr = if (candidate.startsWith("[")) candidate else "[${candidate.removePrefix("{").removeSuffix("}")}]"
                 val list = json.decodeFromString<List<RawAnnotation>>(arrayStr)
                 if (list.isNotEmpty()) return list
             } catch (_: Exception) {
